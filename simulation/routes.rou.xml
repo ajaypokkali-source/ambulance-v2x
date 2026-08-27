@@ -1,0 +1,50 @@
+<routes>
+
+    <!-- Normal car -->
+    <vType id="car"
+       accel="2.6"
+       decel="4.5"
+       sigma="0.5"
+       length="5"
+       maxSpeed="13.89"
+       color="0,0,1"/>
+
+    <!-- Ambulance -->
+    <vType id="ambulance"
+       accel="3.0"
+       decel="5.0"
+       sigma="0.2"
+       length="6"
+       maxSpeed="20"
+       color="1,0,0"/>
+
+    <!-- Route from A to B -->
+    <route id="routeAB" edges="AB"/>
+
+    <!-- Normal traffic -->
+    <vehicle id="car0"
+             type="car"
+             route="routeAB"
+             depart="0"
+             departLane="0"/>
+
+    <vehicle id="car1"
+             type="car"
+             route="routeAB"
+             depart="3"
+             departLane="0"/>
+
+    <vehicle id="car2"
+             type="car"
+             route="routeAB"
+             depart="6"
+             departLane="1"/>
+
+    <!-- Emergency vehicle -->
+    <vehicle id="ambulance"
+             type="ambulance"
+             route="routeAB"
+             depart="10"
+             departLane="0"/>
+
+</routes>

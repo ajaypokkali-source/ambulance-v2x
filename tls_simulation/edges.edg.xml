@@ -1,0 +1,106 @@
+<edges>
+
+    <!-- =============================== -->
+    <!-- MAIN AMBULANCE CORRIDOR -->
+    <!-- =============================== -->
+
+    <edge id="J1_J2"
+          from="J1"
+          to="J2"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J2_J3"
+          from="J2"
+          to="J3"
+          numLanes="2"
+          speed="13.89"/>
+
+
+    <!-- =============================== -->
+    <!-- J1 SIDE ROADS -->
+    <!-- =============================== -->
+
+    <edge id="J1N_J1"
+          from="J1_N"
+          to="J1"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J1_J1N"
+          from="J1"
+          to="J1_N"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J1S_J1"
+          from="J1_S"
+          to="J1"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J1_J1S"
+          from="J1"
+          to="J1_S"
+          numLanes="1"
+          speed="13.89"/>
+
+
+    <!-- =============================== -->
+    <!-- J2 SIDE ROADS -->
+    <!-- =============================== -->
+
+    <edge id="J2N_J2"
+          from="J2_N"
+          to="J2"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J2_J2N"
+          from="J2"
+          to="J2_N"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J2S_J2"
+          from="J2_S"
+          to="J2"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J2_J2S"
+          from="J2"
+          to="J2_S"
+          numLanes="1"
+          speed="13.89"/>
+
+
+    <!-- =============================== -->
+    <!-- J3 SIDE ROADS -->
+    <!-- =============================== -->
+
+    <edge id="J3N_J3"
+          from="J3_N"
+          to="J3"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J3_J3N"
+          from="J3"
+          to="J3_N"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J3S_J3"
+          from="J3_S"
+          to="J3"
+          numLanes="1"
+          speed="13.89"/>
+
+    <edge id="J3_J3S"
+          from="J3"
+          to="J3_S"
+          numLanes="1"
+          speed="13.89"/>
+
+</edges>

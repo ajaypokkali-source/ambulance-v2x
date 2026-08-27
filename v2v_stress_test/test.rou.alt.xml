@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-08-23T19:19:04.369452+05:30 by Eclipse SUMO duarouter 1.27.1
+<duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
+
+    <input>
+        <net-file value="network.net.xml"/>
+        <route-files value="routes.rou.xml"/>
+    </input>
+
+    <output>
+        <output-file value="test.rou.xml"/>
+    </output>
+
+</duarouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="car" length="5.00" minGap="2.50" maxSpeed="13.89" vClass="passenger" accel="2.6" decel="4.5" sigma="0.5"/>
+    <vehicle id="car0" type="car" depart="0.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car1" type="car" depart="2.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car2" type="car" depart="5.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car3" type="car" depart="7.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car4" type="car" depart="10.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car5" type="car" depart="12.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car6" type="car" depart="15.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car7" type="car" depart="18.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car14" type="car" depart="5.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J5_J4 J4_J3 J3_J2 J2_J1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car19" type="car" depart="8.00">
+        <routeDistribution last="0">
+            <route cost="110.37" probability="1.00000000" edges="J1N_J1 J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car15" type="car" depart="12.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J5_J4 J4_J3 J3_J2 J2_J1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car20" type="car" depart="16.00">
+        <routeDistribution last="0">
+            <route cost="108.31" probability="1.00000000" edges="J1S_J1 J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vType id="ambulance" length="6.00" minGap="2.00" maxSpeed="16.67" vClass="emergency" color="red" accel="3.5" decel="5.0" sigma="0.2"/>
+    <vehicle id="ambulance" type="ambulance" depart="20.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car16" type="car" depart="20.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J5_J4 J4_J3 J3_J2 J2_J1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car8" type="car" depart="22.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car21" type="car" depart="24.00">
+        <routeDistribution last="0">
+            <route cost="88.77" probability="1.00000000" edges="J2N_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car9" type="car" depart="25.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car17" type="car" depart="27.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J5_J4 J4_J3 J3_J2 J2_J1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car10" type="car" depart="28.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car22" type="car" depart="30.00">
+        <routeDistribution last="0">
+            <route cost="88.21" probability="1.00000000" edges="J2S_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car11" type="car" depart="31.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car12" type="car" depart="34.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car18" type="car" depart="35.00" departLane="0">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J5_J4 J4_J3 J3_J2 J2_J1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car23" type="car" depart="36.00">
+        <routeDistribution last="0">
+            <route cost="67.17" probability="1.00000000" edges="J3N_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car13" type="car" depart="37.00" departLane="1">
+        <routeDistribution last="0">
+            <route cost="85.36" probability="1.00000000" edges="J1_J2 J2_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="car24" type="car" depart="42.00">
+        <routeDistribution last="0">
+            <route cost="66.61" probability="1.00000000" edges="J3S_J3 J3_J4 J4_J5"/>
+        </routeDistribution>
+    </vehicle>
+</routes>

@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes>
+
+    <!-- ================================================== -->
+    <!-- VEHICLE TYPES -->
+    <!-- ================================================== -->
+
+    <vType
+        id="car"
+        vClass="passenger"
+        accel="2.6"
+        decel="4.5"
+        sigma="0.5"
+        length="5"
+        minGap="2.5"
+        maxSpeed="13.89"
+    />
+
+    <vType
+        id="ambulance"
+        vClass="emergency"
+        accel="3.5"
+        decel="5.0"
+        sigma="0.2"
+        length="6"
+        minGap="2.0"
+        maxSpeed="16.67"
+        color="1,0,0"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- MAIN CORRIDOR ROUTES -->
+    <!-- ================================================== -->
+
+    <route
+        id="main_forward"
+        edges="J1_J2 J2_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="main_reverse"
+        edges="J5_J4 J4_J3 J3_J2 J2_J1"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROAD ROUTES -->
+    <!-- ================================================== -->
+
+    <route
+        id="J1N_to_main"
+        edges="J1N_J1 J1_J2 J2_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="J1S_to_main"
+        edges="J1S_J1 J1_J2 J2_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="J2N_to_main"
+        edges="J2N_J2 J2_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="J2S_to_main"
+        edges="J2S_J2 J2_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="J3N_to_main"
+        edges="J3N_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="J3S_to_main"
+        edges="J3S_J3 J3_J4 J4_J5"
+    />
+
+    <route
+        id="J4N_to_main"
+        edges="J4N_J4 J4_J5"
+    />
+
+    <route
+        id="J4S_to_main"
+        edges="J4S_J4 J4_J5"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- AMBULANCE -->
+    <!-- ================================================== -->
+
+    <!--
+        The ambulance starts at J1 and travels through
+        all five intersections.
+    -->
+
+    <vehicle
+        id="ambulance"
+        type="ambulance"
+        route="main_forward"
+        depart="20"
+        departLane="0"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- INITIAL FORWARD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <vehicle id="car0"
+             type="car"
+             route="main_forward"
+             depart="0"
+             departLane="0"/>
+
+    <vehicle id="car1"
+             type="car"
+             route="main_forward"
+             depart="3"
+             departLane="1"/>
+
+    <vehicle id="car2"
+             type="car"
+             route="main_forward"
+             depart="6"
+             departLane="0"/>
+
+    <vehicle id="car3"
+             type="car"
+             route="main_forward"
+             depart="9"
+             departLane="1"/>
+
+    <vehicle id="car4"
+             type="car"
+             route="main_forward"
+             depart="12"
+             departLane="0"/>
+
+    <vehicle id="car5"
+             type="car"
+             route="main_forward"
+             depart="15"
+             departLane="1"/>
+
+    <vehicle id="car6"
+             type="car"
+             route="main_forward"
+             depart="18"
+             departLane="0"/>
+
+    <vehicle id="car7"
+             type="car"
+             route="main_forward"
+             depart="21"
+             departLane="1"/>
+
+
+    <!-- ================================================== -->
+    <!-- INITIAL REVERSE TRAFFIC -->
+    <!-- ================================================== -->
+
+    <vehicle id="car8"
+             type="car"
+             route="main_reverse"
+             depart="4"
+             departLane="0"/>
+
+    <vehicle id="car9"
+             type="car"
+             route="main_reverse"
+             depart="11"
+             departLane="1"/>
+
+    <vehicle id="car10"
+             type="car"
+             route="main_reverse"
+             depart="18"
+             departLane="0"/>
+
+    <vehicle id="car11"
+             type="car"
+             route="main_reverse"
+             depart="25"
+             departLane="1"/>
+
+
+    <!-- ================================================== -->
+    <!-- INITIAL SIDE-ROAD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <vehicle id="car12"
+             type="car"
+             route="J1N_to_main"
+             depart="8"/>
+
+    <vehicle id="car13"
+             type="car"
+             route="J1S_to_main"
+             depart="14"/>
+
+    <vehicle id="car14"
+             type="car"
+             route="J2N_to_main"
+             depart="20"/>
+
+    <vehicle id="car15"
+             type="car"
+             route="J2S_to_main"
+             depart="26"/>
+
+    <vehicle id="car16"
+             type="car"
+             route="J3N_to_main"
+             depart="32"/>
+
+    <vehicle id="car17"
+             type="car"
+             route="J3S_to_main"
+             depart="38"/>
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS FORWARD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <!--
+        New vehicles are generated every 5 seconds
+        from 40 s through 300 s.
+    -->
+
+    <flow
+        id="forward_flow"
+        type="car"
+        route="main_forward"
+        begin="40"
+        end="300"
+        period="5"
+        departLane="random"
+        departSpeed="max"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS REVERSE TRAFFIC -->
+    <!-- ================================================== -->
+
+    <!--
+        New vehicles are generated every 7 seconds
+        from 40 s through 300 s.
+    -->
+
+    <flow
+        id="reverse_flow"
+        type="car"
+        route="main_reverse"
+        begin="40"
+        end="300"
+        period="7"
+        departLane="random"
+        departSpeed="max"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS J1 SIDE-ROAD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <flow
+        id="J1N_flow"
+        type="car"
+        route="J1N_to_main"
+        begin="45"
+        end="300"
+        period="15"
+        departLane="random"
+    />
+
+    <flow
+        id="J1S_flow"
+        type="car"
+        route="J1S_to_main"
+        begin="50"
+        end="300"
+        period="17"
+        departLane="random"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS J2 SIDE-ROAD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <flow
+        id="J2N_flow"
+        type="car"
+        route="J2N_to_main"
+        begin="55"
+        end="300"
+        period="13"
+        departLane="random"
+    />
+
+    <flow
+        id="J2S_flow"
+        type="car"
+        route="J2S_to_main"
+        begin="60"
+        end="300"
+        period="16"
+        departLane="random"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS J3 SIDE-ROAD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <flow
+        id="J3N_flow"
+        type="car"
+        route="J3N_to_main"
+        begin="65"
+        end="300"
+        period="14"
+        departLane="random"
+    />
+
+    <flow
+        id="J3S_flow"
+        type="car"
+        route="J3S_to_main"
+        begin="70"
+        end="300"
+        period="18"
+        departLane="random"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS J4 SIDE-ROAD TRAFFIC -->
+    <!-- ================================================== -->
+
+    <flow
+        id="J4N_flow"
+        type="car"
+        route="J4N_to_main"
+        begin="75"
+        end="300"
+        period="15"
+        departLane="random"
+    />
+
+    <flow
+        id="J4S_flow"
+        type="car"
+        route="J4S_to_main"
+        begin="80"
+        end="300"
+        period="20"
+        departLane="random"
+    />
+
+</routes>

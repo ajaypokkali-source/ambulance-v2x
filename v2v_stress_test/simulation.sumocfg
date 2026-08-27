@@ -1,0 +1,23 @@
+<configuration>
+
+    <input>
+        <net-file value="network.net.xml"/>
+        <route-files value="routes.rou.xml"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="300"/>
+        <step-length value="0.5"/>
+    </time>
+
+    <processing>
+        <time-to-teleport value="-1"/>
+    </processing>
+
+    <report>
+        <verbose value="false"/>
+        <duration-log.disable value="true"/>
+    </report>
+
+</configuration>
