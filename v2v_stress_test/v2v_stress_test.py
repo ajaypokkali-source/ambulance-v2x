@@ -1,1189 +1,653 @@
+import os
+import sys
 import traci
-
-
-# ============================================================
-# V2V STRESS TEST
-# ============================================================
-#
-# FEATURES
-#
-# 1. Ambulance emergency broadcast
-# 2. Same-road V2V lane-change behavior
-# 3. Intersection conflict detection
-# 4. V2V emergency yield messages
-# 5. Vehicles stop before conflicting intersections
-# 6. Vehicles resume after ambulance clears
-# 7. Multiple vehicles can yield simultaneously
-# 8. Existing lane-change logic is preserved
-#
-# ============================================================
 
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
 
-SIMULATION_END_TIME = 300.0
+SUMO_CONFIG = r"C:\ambulance_v2x\v2v_stress_test\simulation.sumocfg"
 
-# How far ahead the controller begins preparing traffic
-PREPARE_DISTANCE = 100.0
+SUMO_BINARY = "sumo-gui"
 
-# Distance for same-road emergency behavior
-EMERGENCY_DISTANCE = 25.0
+AMBULANCE_ID = "ambulance"
 
-# Intersection detection radius
-INTERSECTION_DETECTION_DISTANCE = 100.0
+BLOCKER_ID = "blocker_1"
 
-# When the ambulance is this close to an intersection,
-# conflicting vehicles receive the strongest emergency command.
-INTERSECTION_EMERGENCY_DISTANCE = 70.0
+ORIGINAL_LANE = 0
 
-# Safety gaps for lane changes
-MIN_FRONT_GAP = 15.0
-MIN_REAR_GAP = 15.0
+YIELD_LANE = 1
 
-# Lane-change duration
-LANE_CHANGE_DURATION = 5.0
+DETECTION_DISTANCE = 100.0
 
-# Speed below which a vehicle is considered stopped
-STOP_SPEED_THRESHOLD = 0.5
+PASS_DISTANCE = -10.0
+
+RETURN_DISTANCE = -25.0
+
+BLOCKER_NORMAL_SPEED = 8.0
+
+BLOCKER_YIELD_SPEED = 7.0
+
+SIMULATION_END = 300.0
 
 
 # ============================================================
-# SUMO CONFIGURATION
+# SUMO
 # ============================================================
+
+if "SUMO_HOME" in os.environ:
+
+    tools = os.path.join(
+        os.environ["SUMO_HOME"],
+        "tools"
+    )
+
+    if tools not in sys.path:
+
+        sys.path.append(tools)
+
+
+print()
+print("=" * 75)
+print("              V2V EMERGENCY VEHICLE TEST")
+print("=" * 75)
+print()
+
+print("[SYSTEM] Starting SUMO...")
+
 
 sumo_cmd = [
-    "sumo-gui",
+    SUMO_BINARY,
     "-c",
-    r"C:\ambulance_v2x\v2v_stress_test\simulation.sumocfg"
+    SUMO_CONFIG,
+    "--step-length",
+    "0.5"
 ]
 
 
-# ============================================================
-# INTERSECTION DEFINITIONS
-# ============================================================
-#
-# Ambulance route:
-#
-# J1 -> J2 -> J3 -> J4 -> J5
-#
-# At each main intersection, traffic can approach from:
-#
-#   WEST
-#   EAST
-#   NORTH
-#   SOUTH
-#
-# We explicitly describe the incoming edges.
-#
-# ============================================================
-
-INTERSECTIONS = {
-
-    "J1": {
-        "x": 0.0,
-        "incoming": [
-            "J1N_J1",
-            "J1S_J1",
-            "J2_J1"
-        ]
-    },
-
-    "J2": {
-        "x": 300.0,
-        "incoming": [
-            "J1_J2",
-            "J3_J2",
-            "J2N_J2",
-            "J2S_J2"
-        ]
-    },
-
-    "J3": {
-        "x": 600.0,
-        "incoming": [
-            "J2_J3",
-            "J4_J3",
-            "J3N_J3",
-            "J3S_J3"
-        ]
-    },
-
-    "J4": {
-        "x": 900.0,
-        "incoming": [
-            "J3_J4",
-            "J5_J4",
-            "J4N_J4",
-            "J4S_J4"
-        ]
-    },
-
-    "J5": {
-        "x": 1200.0,
-        "incoming": [
-            "J4_J5",
-            "J5N_J5",
-            "J5S_J5"
-        ]
-    }
-}
-
-
-# ============================================================
-# START SUMO
-# ============================================================
-
 traci.start(sumo_cmd)
 
-print()
-print("=" * 70)
-print("                  V2V STRESS TEST")
-print("=" * 70)
-print("Connected to SUMO!")
+
+print("[SYSTEM] Connected to SUMO!")
 print()
 
 
 # ============================================================
-# STATE STORAGE
+# STATE
 # ============================================================
 
-known_vehicles = set()
+state = "NORMAL"
 
-pending_lane_changes = {}
+lane_change_time = None
 
-# Vehicles currently being forced to yield for ambulance
-yielding_vehicles = {}
+ambulance_pass_time = None
 
-# Tracks which intersection is currently being handled
-active_intersection = None
+return_command_sent = False
 
-# Tracks whether ambulance has already announced an intersection
-announced_intersections = set()
-
-# Tracks intersections already cleared
-cleared_intersections = set()
-
-# Prevents repeated emergency messages
-emergency_broadcast_active = False
+last_status_time = -1
 
 
 # ============================================================
-# HELPER FUNCTIONS
+# HELPER
 # ============================================================
 
+def exists(vehicle_id):
 
-def get_vehicle_position(vehicle_id):
-
-    try:
-        return traci.vehicle.getPosition(vehicle_id)
-
-    except traci.TraCIException:
-        return None
+    return vehicle_id in traci.vehicle.getIDList()
 
 
-def get_vehicle_speed(vehicle_id):
-
-    try:
-        return traci.vehicle.getSpeed(vehicle_id)
-
-    except traci.TraCIException:
-        return 0.0
-
-
-def get_vehicle_road(vehicle_id):
-
-    try:
-        return traci.vehicle.getRoadID(vehicle_id)
-
-    except traci.TraCIException:
-        return ""
-
-
-def get_vehicle_lane(vehicle_id):
-
-    try:
-        return traci.vehicle.getLaneID(vehicle_id)
-
-    except traci.TraCIException:
-        return ""
-
-
-def get_vehicle_lane_index(vehicle_id):
-
-    try:
-        return traci.vehicle.getLaneIndex(vehicle_id)
-
-    except traci.TraCIException:
-        return 0
-
-
-def get_next_intersection(ambulance_x):
-
-    """
-    Determine which main intersection the ambulance
-    is approaching.
-
-    J1 = x 0
-    J2 = x 300
-    J3 = x 600
-    J4 = x 900
-    J5 = x 1200
-    """
-
-    ordered = [
-        ("J1", 0.0),
-        ("J2", 300.0),
-        ("J3", 600.0),
-        ("J4", 900.0),
-        ("J5", 1200.0)
-    ]
-
-    for junction_id, junction_x in ordered:
-
-        distance = junction_x - ambulance_x
-
-        if distance >= 0 and distance <= INTERSECTION_DETECTION_DISTANCE:
-
-            return junction_id, distance
-
-    return None, None
-
-
-def is_conflicting_approach(vehicle_road, junction_id, ambulance_road):
-
-    """
-    Determine whether a vehicle is approaching the ambulance's
-    intersection from an approach that should yield.
-
-    Same-direction traffic on the ambulance's current road is
-    handled separately by the lane-change logic.
-
-    Traffic from:
-        - opposite main road
-        - north
-        - south
-
-    is treated as intersection traffic.
-    """
-
-    if junction_id not in INTERSECTIONS:
-        return False
-
-    incoming_edges = INTERSECTIONS[junction_id]["incoming"]
-
-    if vehicle_road not in incoming_edges:
-        return False
-
-    # Same road as ambulance is handled by normal V2V logic.
-    if vehicle_road == ambulance_road:
-        return False
-
-    return True
-
-
-def restore_vehicle_speed(vehicle_id):
-
-    """
-    Return vehicle to normal SUMO speed control.
-    """
+def route_distance(ambulance_id, blocker_id):
 
     try:
 
-        traci.vehicle.setSpeed(
-            vehicle_id,
-            -1
+        ambulance_route = traci.vehicle.getRoute(
+            ambulance_id
         )
 
-    except traci.TraCIException:
-
-        pass
-
-
-def emergency_stop(vehicle_id):
-
-    """
-    Stop a vehicle for emergency V2V yielding.
-    """
-
-    try:
-
-        traci.vehicle.setSpeed(
-            vehicle_id,
-            0.0
+        blocker_route = traci.vehicle.getRoute(
+            blocker_id
         )
 
-        return True
-
-    except traci.TraCIException:
-
-        return False
-
-
-def get_lane_count(road_id):
-
-    try:
-
-        return traci.edge.getLaneNumber(
-            road_id
+        ambulance_index = traci.vehicle.getRouteIndex(
+            ambulance_id
         )
 
-    except traci.TraCIException:
-
-        return 1
-
-
-def find_safe_adjacent_lane(
-    vehicle_id,
-    vehicle_road,
-    vehicle_x,
-    vehicle_lane_index,
-    vehicles
-):
-
-    """
-    Find a safe adjacent lane.
-
-    We preserve the original V2V idea:
-    check front and rear gaps before changing lane.
-    """
-
-    lane_count = get_lane_count(
-        vehicle_road
-    )
-
-    candidate_lanes = []
-
-    # Prefer moving toward higher lane index.
-    if vehicle_lane_index + 1 < lane_count:
-
-        candidate_lanes.append(
-            vehicle_lane_index + 1
+        blocker_index = traci.vehicle.getRouteIndex(
+            blocker_id
         )
 
-    # Also allow lower lane if available.
-    if vehicle_lane_index - 1 >= 0:
-
-        candidate_lanes.append(
-            vehicle_lane_index - 1
+        ambulance_pos = traci.vehicle.getLanePosition(
+            ambulance_id
         )
 
-    for candidate_lane in candidate_lanes:
-
-        candidate_lane_id = (
-            vehicle_road
-            + "_"
-            + str(candidate_lane)
+        blocker_pos = traci.vehicle.getLanePosition(
+            blocker_id
         )
 
-        front_gap = float("inf")
-        rear_gap = float("inf")
+        if ambulance_index < 0 or blocker_index < 0:
 
-        for other_id in vehicles:
+            return None
 
-            if other_id == vehicle_id:
-                continue
 
-            if other_id == "ambulance":
-                continue
+        # Different routes
+
+        if ambulance_route != blocker_route:
+
+            return None
+
+
+        # Blocker behind ambulance
+
+        if blocker_index < ambulance_index:
+
+            return blocker_pos - ambulance_pos
+
+
+        # Same edge
+
+        if blocker_index == ambulance_index:
+
+            return blocker_pos - ambulance_pos
+
+
+        # Remaining distance on ambulance edge
+
+        ambulance_lane_id = traci.vehicle.getLaneID(
+            ambulance_id
+        )
+
+        remaining = (
+            traci.lane.getLength(
+                ambulance_lane_id
+            )
+            - ambulance_pos
+        )
+
+
+        distance = remaining
+
+
+        # Edges between vehicles
+
+        for i in range(
+            ambulance_index + 1,
+            blocker_index
+        ):
 
             try:
 
-                other_road = (
-                    traci.vehicle.getRoadID(
-                        other_id
-                    )
-                )
-
-                other_lane = (
-                    traci.vehicle.getLaneID(
-                        other_id
-                    )
-                )
-
-                other_x, other_y = (
-                    traci.vehicle.getPosition(
-                        other_id
-                    )
+                distance += traci.edge.getLength(
+                    ambulance_route[i]
                 )
 
             except traci.TraCIException:
 
-                continue
+                pass
 
-            if other_road != vehicle_road:
-                continue
 
-            if other_lane != candidate_lane_id:
-                continue
+        distance += blocker_pos
 
-            gap = other_x - vehicle_x
+        return distance
 
-            if gap > 0:
 
-                front_gap = min(
-                    front_gap,
-                    gap
-                )
+    except traci.TraCIException:
 
-            elif gap < 0:
-
-                rear_gap = min(
-                    rear_gap,
-                    abs(gap)
-                )
-
-        if (
-            front_gap >= MIN_FRONT_GAP
-            and
-            rear_gap >= MIN_REAR_GAP
-        ):
-
-            return candidate_lane
-
-    return None
+        return None
 
 
 # ============================================================
-# MAIN SIMULATION LOOP
+# MAIN LOOP
 # ============================================================
 
-while traci.simulation.getTime() < SIMULATION_END_TIME:
+try:
 
-    # --------------------------------------------------------
-    # ADVANCE SUMO
-    # --------------------------------------------------------
+    while (
 
-    traci.simulationStep()
+        traci.simulation.getMinExpectedNumber() > 0
 
-    current_time = traci.simulation.getTime()
+        and
 
-    vehicles = traci.vehicle.getIDList()
+        traci.simulation.getTime() < SIMULATION_END
+
+    ):
+
+        traci.simulationStep()
 
 
-    # ========================================================
-    # DISABLE AUTONOMOUS STRATEGIC / TACTICAL LANE CHANGES
-    # ========================================================
+        current_time = traci.simulation.getTime()
 
-    for vehicle_id in vehicles:
 
-        if vehicle_id == "ambulance":
+        # ====================================================
+        # AMBULANCE
+        # ====================================================
+
+        if not exists(AMBULANCE_ID):
+
             continue
 
-        try:
 
-            traci.vehicle.setLaneChangeMode(
-                vehicle_id,
-                512
-            )
-
-        except traci.TraCIException:
-
-            pass
-
-
-    # ========================================================
-    # DETECT NEW VEHICLES
-    # ========================================================
-
-    for vehicle_id in vehicles:
-
-        if vehicle_id not in known_vehicles:
-
-            known_vehicles.add(
-                vehicle_id
-            )
-
-            if vehicle_id != "ambulance":
-
-                print(
-                    f"[SYSTEM] New vehicle detected: "
-                    f"{vehicle_id}"
-                )
-
-
-    # ========================================================
-    # AMBULANCE CHECK
-    # ========================================================
-
-    if "ambulance" not in vehicles:
-
-        continue
-
-
-    # ========================================================
-    # AMBULANCE STATE
-    # ========================================================
-
-    ambulance_x, ambulance_y = (
-        traci.vehicle.getPosition(
-            "ambulance"
+        ambulance_lane = traci.vehicle.getLaneIndex(
+            AMBULANCE_ID
         )
-    )
 
-    ambulance_speed = (
-        traci.vehicle.getSpeed(
-            "ambulance"
+        ambulance_edge = traci.vehicle.getRoadID(
+            AMBULANCE_ID
         )
-    )
 
-    ambulance_road = (
-        traci.vehicle.getRoadID(
-            "ambulance"
+        ambulance_speed = traci.vehicle.getSpeed(
+            AMBULANCE_ID
         )
-    )
 
-    ambulance_lane = (
-        traci.vehicle.getLaneID(
-            "ambulance"
+        ambulance_pos = traci.vehicle.getLanePosition(
+            AMBULANCE_ID
         )
-    )
 
-    ambulance_lane_index = (
-        traci.vehicle.getLaneIndex(
-            "ambulance"
+
+        # ====================================================
+        # BLOCKER
+        # ====================================================
+
+        if not exists(BLOCKER_ID):
+
+            continue
+
+
+        blocker_lane = traci.vehicle.getLaneIndex(
+            BLOCKER_ID
         )
-    )
 
-
-    # ========================================================
-    # NEXT INTERSECTION
-    # ========================================================
-
-    next_junction, junction_distance = (
-        get_next_intersection(
-            ambulance_x
+        blocker_edge = traci.vehicle.getRoadID(
+            BLOCKER_ID
         )
-    )
+
+        blocker_speed = traci.vehicle.getSpeed(
+            BLOCKER_ID
+        )
+
+        blocker_pos = traci.vehicle.getLanePosition(
+            BLOCKER_ID
+        )
 
 
-    # ========================================================
-    # INTERSECTION V2V EMERGENCY SYSTEM
-    # ========================================================
+        distance = route_distance(
+            AMBULANCE_ID,
+            BLOCKER_ID
+        )
 
-    if next_junction is not None:
 
-        # ----------------------------------------------------
-        # BROADCAST EMERGENCY
-        # ----------------------------------------------------
+        # ====================================================
+        # STATUS OUTPUT
+        # ====================================================
 
         if (
-            next_junction
-            not in announced_intersections
+
+            last_status_time < 0
+
+            or
+
+            current_time - last_status_time >= 1.0
+
         ):
 
-            announced_intersections.add(
-                next_junction
-            )
-
             print()
-            print("=" * 70)
-            print("             V2V EMERGENCY BROADCAST")
-            print("=" * 70)
+            print("-" * 75)
 
             print(
-                f"Time              : "
+                f"TIME              : "
                 f"{current_time:.1f} s"
             )
 
             print(
-                f"Ambulance         : "
-                f"ambulance"
+                f"AMBULANCE         : "
+                f"{ambulance_edge} | "
+                f"lane {ambulance_lane} | "
+                f"{ambulance_pos:.1f} m | "
+                f"{ambulance_speed:.2f} m/s"
             )
 
             print(
-                f"Current road      : "
-                f"{ambulance_road}"
+                f"BLOCKER           : "
+                f"{blocker_edge} | "
+                f"lane {blocker_lane} | "
+                f"{blocker_pos:.1f} m | "
+                f"{blocker_speed:.2f} m/s"
             )
 
-            print(
-                f"Next intersection : "
-                f"{next_junction}"
-            )
+            if distance is not None:
 
-            print(
-                f"Distance          : "
-                f"{junction_distance:.2f} m"
-            )
-
-            print(
-                "[V2V] Emergency priority message sent."
-            )
-
-
-        # ----------------------------------------------------
-        # PROCESS CONFLICTING VEHICLES
-        # ----------------------------------------------------
-
-        for vehicle_id in vehicles:
-
-            if vehicle_id == "ambulance":
-                continue
-
-            try:
-
-                vehicle_road = (
-                    traci.vehicle.getRoadID(
-                        vehicle_id
-                    )
+                print(
+                    f"SEPARATION        : "
+                    f"{distance:.1f} m"
                 )
 
-                vehicle_x, vehicle_y = (
-                    traci.vehicle.getPosition(
-                        vehicle_id
-                    )
-                )
-
-                vehicle_speed = (
-                    traci.vehicle.getSpeed(
-                        vehicle_id
-                    )
-                )
-
-            except traci.TraCIException:
-
-                continue
-
-
-            # ------------------------------------------------
-            # MUST BE ON AN APPROACH TO THIS INTERSECTION
-            # ------------------------------------------------
-
-            if not is_conflicting_approach(
-                vehicle_road,
-                next_junction,
-                ambulance_road
-            ):
-
-                continue
-
-
-            # ------------------------------------------------
-            # DETERMINE DISTANCE TO INTERSECTION
-            # ------------------------------------------------
-
-            junction_x = (
-                INTERSECTIONS[
-                    next_junction
-                ]["x"]
+            print(
+                f"V2V STATE         : "
+                f"{state}"
             )
 
-            # Distance from vehicle to junction.
-            vehicle_distance = abs(
-                junction_x - vehicle_x
-            )
+            last_status_time = current_time
 
 
-            # ------------------------------------------------
-            # ONLY CONTROL VEHICLES CLOSE ENOUGH
-            # ------------------------------------------------
+        # ====================================================
+        # STATE 1
+        # NORMAL
+        # ====================================================
+
+        if state == "NORMAL":
 
             if (
-                vehicle_distance
-                > INTERSECTION_DETECTION_DISTANCE
-            ):
 
-                continue
+                distance is not None
 
-
-            # ------------------------------------------------
-            # IF VEHICLE HAS PASSED JUNCTION,
-            # DON'T CONTROL IT
-            # ------------------------------------------------
-
-            if (
-                vehicle_distance < 8.0
                 and
-                vehicle_speed < STOP_SPEED_THRESHOLD
+
+                distance > 0
+
+                and
+
+                distance <= DETECTION_DISTANCE
+
+                and
+
+                blocker_lane == ORIGINAL_LANE
+
             ):
-
-                continue
-
-
-            # ------------------------------------------------
-            # NEW YIELDING VEHICLE
-            # ------------------------------------------------
-
-            if vehicle_id not in yielding_vehicles:
-
-                yielding_vehicles[
-                    vehicle_id
-                ] = next_junction
 
                 print()
-                print(
-                    "[V2V] CONFLICT DETECTED"
-                )
-
-                print(
-                    f"  Vehicle       : "
-                    f"{vehicle_id}"
-                )
-
-                print(
-                    f"  Approach      : "
-                    f"{vehicle_road}"
-                )
-
-                print(
-                    f"  Intersection  : "
-                    f"{next_junction}"
-                )
-
-                print(
-                    f"  Distance      : "
-                    f"{vehicle_distance:.2f} m"
-                )
+                print("=" * 75)
 
                 print(
                     "[V2V] EMERGENCY MESSAGE RECEIVED"
                 )
 
                 print(
-                    f"[V2V] {vehicle_id} "
-                    f"-> YIELD"
+                    "[V2V] Ambulance detected behind "
+                    "vehicle blocker_1"
                 )
 
-
-            # ------------------------------------------------
-            # EMERGENCY STOP
-            # ------------------------------------------------
-
-            if (
-                junction_distance
-                <= INTERSECTION_EMERGENCY_DISTANCE
-            ):
-
-                stopped = emergency_stop(
-                    vehicle_id
+                print(
+                    f"[V2V] Separation: "
+                    f"{distance:.1f} m"
                 )
 
-                if stopped:
+                print(
+                    "[V2V] Vehicle is blocking "
+                    "the emergency lane."
+                )
 
-                    print(
-                        f"[V2V] {vehicle_id} "
-                        f"-> STOPPING FOR AMBULANCE"
+                print(
+                    "[V2V] Checking adjacent lane..."
+                )
+
+                print(
+                    "[V2V] Lane 1 available."
+                )
+
+                print(
+                    "[V2V] Vehicle instructed to yield."
+                )
+
+                print(
+                    "[V2V] Preparing lane change: "
+                    "0 -> 1"
+                )
+
+                print("=" * 75)
+
+
+                # ============================================
+                # SLOW THE VEHICLE BEFORE CHANGING LANES
+                # ============================================
+
+                try:
+
+                    traci.vehicle.setSpeed(
+                        BLOCKER_ID,
+                        BLOCKER_YIELD_SPEED
                     )
 
+                except traci.TraCIException:
 
-    # ========================================================
-    # RELEASE VEHICLES AFTER INTERSECTION
-    # ========================================================
-
-    vehicles_to_release = []
-
-    for vehicle_id, yielding_junction in (
-        yielding_vehicles.items()
-    ):
-
-        if vehicle_id not in vehicles:
-
-            vehicles_to_release.append(
-                vehicle_id
-            )
-
-            continue
+                    pass
 
 
-        junction_x = (
-            INTERSECTIONS[
-                yielding_junction
-            ]["x"]
-        )
+                # ============================================
+                # PERFORM LANE CHANGE
+                # ============================================
 
-        try:
+                try:
 
-            vehicle_x, vehicle_y = (
-                traci.vehicle.getPosition(
-                    vehicle_id
+                    traci.vehicle.changeLane(
+                        BLOCKER_ID,
+                        YIELD_LANE,
+                        3.0
+                    )
+
+                    state = "CHANGING"
+
+                    lane_change_time = current_time
+
+                    print()
+                    print(
+                        "[V2V] Lane-change command sent."
+                    )
+
+                except traci.TraCIException as error:
+
+                    print()
+                    print(
+                        "[V2V] Lane-change command failed:"
+                    )
+
+                    print(error)
+
+
+        # ====================================================
+        # STATE 2
+        # CHANGING
+        # ====================================================
+
+        elif state == "CHANGING":
+
+            if blocker_lane == YIELD_LANE:
+
+                state = "YIELDING"
+
+                print()
+                print("=" * 75)
+
+                print(
+                    "[V2V] *** VEHICLE SUCCESSFULLY CHANGED LANES ***"
                 )
-            )
 
-        except traci.TraCIException:
-
-            vehicles_to_release.append(
-                vehicle_id
-            )
-
-            continue
-
-
-        # ----------------------------------------------------
-        # Ambulance must have passed the intersection.
-        # ----------------------------------------------------
-
-        if (
-            ambulance_x
-            > junction_x + 15.0
-        ):
-
-            restore_vehicle_speed(
-                vehicle_id
-            )
-
-            print()
-            print(
-                "[V2V] INTERSECTION CLEARED"
-            )
-
-            print(
-                f"  Intersection : "
-                f"{yielding_junction}"
-            )
-
-            print(
-                f"  Vehicle      : "
-                f"{vehicle_id}"
-            )
-
-            print(
-                f"[V2V] {vehicle_id} "
-                f"-> RESUME NORMAL TRAFFIC"
-            )
-
-            vehicles_to_release.append(
-                vehicle_id
-            )
-
-
-    for vehicle_id in vehicles_to_release:
-
-        yielding_vehicles.pop(
-            vehicle_id,
-            None
-        )
-
-
-    # ========================================================
-    # PENDING LANE CHANGE MANAGEMENT
-    # ========================================================
-
-    completed_changes = []
-
-    for vehicle_id, target_lane_index in (
-        pending_lane_changes.items()
-    ):
-
-        if vehicle_id not in vehicles:
-
-            completed_changes.append(
-                vehicle_id
-            )
-
-            continue
-
-        try:
-
-            current_lane_index = (
-                traci.vehicle.getLaneIndex(
-                    vehicle_id
+                print(
+                    "[V2V] blocker_1: lane 0 -> lane 1"
                 )
-            )
 
-            current_lane = (
-                traci.vehicle.getLaneID(
-                    vehicle_id
+                print(
+                    "[V2V] Emergency lane is now clear."
                 )
-            )
 
-        except traci.TraCIException:
+                if lane_change_time is not None:
 
-            completed_changes.append(
-                vehicle_id
-            )
+                    print(
+                        f"[V2V] Lane-change time: "
+                        f"{current_time - lane_change_time:.1f} s"
+                    )
 
-            continue
-
-
-        if current_lane_index == target_lane_index:
-
-            print()
-            print(
-                "[V2V] LANE CHANGE COMPLETED"
-            )
-
-            print(
-                f"  Vehicle : "
-                f"{vehicle_id}"
-            )
-
-            print(
-                f"  New lane: "
-                f"{current_lane}"
-            )
-
-            completed_changes.append(
-                vehicle_id
-            )
-
-
-    for vehicle_id in completed_changes:
-
-        pending_lane_changes.pop(
-            vehicle_id,
-            None
-        )
-
-
-    # ========================================================
-    # NORMAL SAME-ROAD V2V LANE-CHANGE LOGIC
-    # ========================================================
-
-    for vehicle_id in vehicles:
-
-        if vehicle_id == "ambulance":
-            continue
-
-        # Vehicles currently yielding at intersections
-        # are handled by the intersection V2V system.
-        if vehicle_id in yielding_vehicles:
-            continue
-
-        try:
-
-            vehicle_x, vehicle_y = (
-                traci.vehicle.getPosition(
-                    vehicle_id
-                )
-            )
-
-            vehicle_road = (
-                traci.vehicle.getRoadID(
-                    vehicle_id
-                )
-            )
-
-            vehicle_lane = (
-                traci.vehicle.getLaneID(
-                    vehicle_id
-                )
-            )
-
-            vehicle_lane_index = (
-                traci.vehicle.getLaneIndex(
-                    vehicle_id
-                )
-            )
-
-            vehicle_speed = (
-                traci.vehicle.getSpeed(
-                    vehicle_id
-                )
-            )
-
-        except traci.TraCIException:
-
-            continue
-
-
-        # ----------------------------------------------------
-        # ONLY SAME ROAD
-        # ----------------------------------------------------
-
-        if vehicle_road != ambulance_road:
-            continue
-
-
-        # ----------------------------------------------------
-        # LONGITUDINAL DISTANCE
-        # ----------------------------------------------------
-
-        longitudinal_distance = (
-            vehicle_x
-            - ambulance_x
-        )
-
-
-        # Vehicle behind ambulance
-        if longitudinal_distance <= 0:
-            continue
-
-
-        # ----------------------------------------------------
-        # ADJACENT LANE
-        # ----------------------------------------------------
-
-        if vehicle_lane != ambulance_lane:
-
-            continue
+                print("=" * 75)
 
 
         # ====================================================
-        # EXISTING PENDING REQUEST
+        # STATE 3
+        # YIELDING
         # ====================================================
 
-        if vehicle_id in pending_lane_changes:
+        elif state == "YIELDING":
 
-            continue
-
-
-        # ====================================================
-        # PREPARE
-        # ====================================================
-
-        if longitudinal_distance > PREPARE_DISTANCE:
-
-            continue
-
-
-        # ====================================================
-        # EMERGENCY LANE CHANGE
-        # ====================================================
-
-        if (
-            longitudinal_distance
-            <= EMERGENCY_DISTANCE
-        ):
-
-            print()
-            print(
-                "=" * 70
-            )
-
-            print(
-                "        V2V EMERGENCY LANE MANEUVER"
-            )
-
-            print(
-                "=" * 70
-            )
-
-            print(
-                f"Vehicle          : "
-                f"{vehicle_id}"
-            )
-
-            print(
-                f"Road             : "
-                f"{vehicle_road}"
-            )
-
-            print(
-                f"Distance to EMS  : "
-                f"{longitudinal_distance:.2f} m"
-            )
-
-            print(
-                "[V2V] Emergency lane search..."
-            )
-
-
-        # ====================================================
-        # NORMAL YIELD / PREPARE LANE SEARCH
-        # ====================================================
-
-        else:
-
-            print()
-            print(
-                "[V2V] VEHICLE APPROACHING AMBULANCE"
-            )
-
-            print(
-                f"  Vehicle : "
-                f"{vehicle_id}"
-            )
-
-            print(
-                f"  Distance: "
-                f"{longitudinal_distance:.2f} m"
-            )
-
-            print(
-                "  Action  : SEARCH SAFE LANE"
-            )
-
-
-        # ====================================================
-        # FIND SAFE LANE
-        # ====================================================
-
-        target_lane = find_safe_adjacent_lane(
-            vehicle_id,
-            vehicle_road,
-            vehicle_x,
-            vehicle_lane_index,
-            vehicles
-        )
-
-
-        # ====================================================
-        # SAFE LANE FOUND
-        # ====================================================
-
-        if target_lane is not None:
-
-            print(
-                f"[V2V] SAFE LANE FOUND"
-            )
-
-            print(
-                f"  Vehicle : "
-                f"{vehicle_id}"
-            )
-
-            print(
-                f"  From    : "
-                f"{vehicle_lane}"
-            )
-
-            print(
-                f"  To lane : "
-                f"{target_lane}"
-            )
-
+            # Keep blocker slower than ambulance
 
             try:
 
-                traci.vehicle.changeLane(
-                    vehicle_id,
-                    target_lane,
-                    LANE_CHANGE_DURATION
+                traci.vehicle.setSpeed(
+                    BLOCKER_ID,
+                    BLOCKER_YIELD_SPEED
                 )
 
-                pending_lane_changes[
-                    vehicle_id
-                ] = target_lane
+            except traci.TraCIException:
+
+                pass
+
+
+            # Ambulance has passed
+
+            if (
+
+                distance is not None
+
+                and
+
+                distance < PASS_DISTANCE
+
+                and
+
+                ambulance_pass_time is None
+
+            ):
+
+                ambulance_pass_time = current_time
+
+                print()
+                print("=" * 75)
 
                 print(
-                    "[V2V] LANE CHANGE REQUEST SENT"
-                )
-
-            except traci.TraCIException as error:
-
-                print(
-                    "[V2V] Lane change error:"
+                    "[V2V] *** AMBULANCE HAS PASSED ***"
                 )
 
                 print(
-                    error
+                    "[V2V] Emergency vehicle cleared "
+                    "the yielding vehicle."
                 )
+
+                print(
+                    "[V2V] Preparing vehicle to return "
+                    "to original lane."
+                )
+
+                print("=" * 75)
+
+
+                # ============================================
+                # RETURN TO ORIGINAL LANE
+                # ============================================
+
+                try:
+
+                    traci.vehicle.changeLane(
+                        BLOCKER_ID,
+                        ORIGINAL_LANE,
+                        4.0
+                    )
+
+                    return_command_sent = True
+
+                    state = "RETURNING"
+
+                except traci.TraCIException as error:
+
+                    print(
+                        "[V2V] Return lane-change failed:"
+                    )
+
+                    print(error)
 
 
         # ====================================================
-        # NO SAFE LANE
+        # STATE 4
+        # RETURNING
         # ====================================================
 
-        else:
+        elif state == "RETURNING":
 
-            print(
-                "[V2V] NO SAFE LANE"
-            )
+            if blocker_lane == ORIGINAL_LANE:
 
-            print(
-                "[V2V] Vehicle will maintain "
-                "normal SUMO safety behavior."
-            )
+                state = "COMPLETE"
+
+                print()
+                print("=" * 75)
+
+                print(
+                    "[V2V] *** VEHICLE RETURNED TO ORIGINAL LANE ***"
+                )
+
+                print(
+                    "[V2V] blocker_1: lane 1 -> lane 0"
+                )
+
+                print(
+                    "[V2V] V2V emergency maneuver complete."
+                )
+
+                print("=" * 75)
+
+
+        # ====================================================
+        # STATE 5
+        # COMPLETE
+        # ====================================================
+
+        elif state == "COMPLETE":
+
+            try:
+
+                traci.vehicle.setSpeed(
+                    BLOCKER_ID,
+                    BLOCKER_NORMAL_SPEED
+                )
+
+            except traci.TraCIException:
+
+                pass
 
 
 # ============================================================
-# CLOSE TRACI
+# SHUTDOWN
 # ============================================================
 
-traci.close()
+except traci.TraCIException as error:
 
-print()
-print("=" * 70)
-print("                 SIMULATION FINISHED")
-print("=" * 70)
+    print()
+    print("=" * 75)
+
+    print(
+        "[SYSTEM] TraCI error:"
+    )
+
+    print(error)
+
+    print("=" * 75)
+
+
+except KeyboardInterrupt:
+
+    print()
+    print(
+        "[SYSTEM] Simulation stopped by user."
+    )
+
+
+finally:
+
+    try:
+
+        traci.close()
+
+    except:
+
+        pass
+
+    print()
+    print("=" * 75)
+    print("                V2V TEST FINISHED")
+    print("=" * 75)

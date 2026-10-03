@@ -1,160 +1,135 @@
-\# 🚑 Ambulance V2X Simulation
+# Ambulance V2X Simulation
 
+A simulation-based project using Eclipse SUMO, Python, and TraCI to develop and evaluate Vehicle-to-Everything (V2X) communication for emergency ambulance movement through urban traffic.
 
+## Project Objectives
 
-A SUMO- and Python-based simulation project for studying emergency-vehicle communication and traffic response using \*\*V2V\*\* and \*\*V2I\*\* concepts, with \*\*I2I and broader V2X coordination planned for future development\*\*.
+- Implement Vehicle-to-Vehicle (V2V) emergency communication.
+- Implement Vehicle-to-Infrastructure (V2I) traffic-light preemption.
+- Implement Infrastructure-to-Infrastructure (I2I) coordination.
+- Integrate V2V, V2I, and I2I into a coordinated V2X system.
+- Evaluate ambulance movement and surrounding traffic response.
 
+## Technologies Used
 
+- Eclipse SUMO – Traffic simulation.
+- Python – Simulation logic and control.
+- TraCI – SUMO control interface.
+- XML – Network, route, and configuration files.
+- Git and GitHub – Version control and collaboration.
 
-The project uses \*\*Eclipse SUMO\*\*, \*\*TraCI\*\*, Python, and XML-based road-network/traffic definitions to simulate an ambulance moving through a traffic environment.
-
-
-
-\---
-
-
-
-\## 📌 Project Overview
-
-
-
-The main objective of this project is to investigate how connected vehicles and intelligent transportation infrastructure can respond to an approaching emergency vehicle.
-
-
-
-The current project contains working experiments for:
-
-
-
-\- 🚗 \*\*V2V — Vehicle-to-Vehicle\*\*
-
-\- 🚦 \*\*V2I — Vehicle-to-Infrastructure\*\*
-
-
-
-Additional work toward:
-
-
-
-\- 🔄 \*\*I2I — Infrastructure-to-Infrastructure\*\*
-
-\- 🌐 \*\*V2X — Vehicle-to-Everything\*\*
-
-
-
-is planned as the project develops.
-
-
-
-The ambulance is used as the emergency vehicle, while surrounding vehicles and traffic infrastructure respond according to the communication logic implemented in the Python controllers.
-
-
-
-\---
-
-
-
-\# 🧩 Technologies
-
-
-
-\- \*\*Eclipse SUMO 1.27.1\*\*
-
-\- \*\*Python 3\*\*
-
-\- \*\*TraCI\*\*
-
-\- \*\*sumolib\*\*
-
-\- \*\*XML\*\*
-
-\- \*\*Git\*\*
-
-\- \*\*GitHub\*\*
-
-
-
-\---
-
-
-
-\# 📁 Project Structure
-
-
+## Project Structure
 
 ```text
+ambulance_v2x/
+    python/
+    results/
+    simulation/
+    tls_simulation/
+    v2v_stress_test/
+    v2x_integrated/
+    .gitignore
+    README.md
+```
 
-ambulance\_v2x/
+## Implemented Modules
 
-│
+### 1. V2V – Vehicle-to-Vehicle Communication
 
-├── python/
+- Detects an approaching ambulance and surrounding vehicles.
+- Identifies vehicles blocking the ambulance in the same lane.
+- Sends emergency messages to nearby vehicles.
+- Slows blocking vehicles and checks adjacent-lane safety.
+- Commands safe lane changes to clear the ambulance's path.
+- Allows the ambulance to overtake.
+- Supports returning vehicles to their original lanes after the ambulance passes.
+- Includes intersection-level vehicle yielding behavior.
 
-│   └── run\_simulation.py
+### 2. V2I – Vehicle-to-Infrastructure Communication
 
-│
+- Detects an approaching ambulance near a traffic signal.
+- Calculates its distance from the target intersection.
+- Sends an emergency preemption request.
+- Activates and maintains the emergency signal phase.
+- Restores normal signal operation after the ambulance clears the intersection.
 
-├── simulation/
+### 3. I2I – Infrastructure-to-Infrastructure Coordination
 
-│   ├── edges.edg.xml
+- Coordinates traffic-light infrastructure across multiple intersections.
+- Supports emergency corridor signal coordination.
+- Enables infrastructure to respond to the ambulance's progress along its route.
 
-│   ├── network.net.xml
+### 4. Integrated V2X System
 
-│   ├── nodes.nod.xml
+- Combines vehicle-level and infrastructure-level emergency responses.
+- Integrates V2V vehicle yielding and lane-clearing behavior.
+- Integrates V2I traffic-light preemption.
+- Integrates I2I multi-intersection coordination.
+- Supports coordinated ambulance movement through the simulated road corridor.
 
-│   ├── routes.rou.xml
+## Road Network
 
-│   ├── simulation.sumocfg
+The main corridor consists of five intersections:
 
-│   ├── traffic\_light\_test.py
+J1 ---- J2 ---- J3 ---- J4 ---- J5
 
-│   └── v2x\_corridor\_v1.py
+The network includes:
 
-│
+- Multiple intersections and connecting side roads.
+- Forward and reverse traffic.
+- Two lanes in each direction on the main corridor.
+- Traffic-light-controlled junctions.
+- Normal traffic and emergency-vehicle routes.
 
-├── tls\_simulation/
+## Running the Simulation
 
-│   ├── edges.edg.xml
+Install Eclipse SUMO and Python.
 
-│   ├── network.net.xml
+Install TraCI:
 
-│   ├── nodes.nod.xml
+```bash
+pip install traci
+```
 
-│   ├── routes.rou.xml
+Navigate to the required experiment directory and run its Python controller.
 
-│   ├── simulation.sumocfg
+Example:
 
-│   ├── traffic\_light\_test.py
+```bat
+cd /d C:\ambulance_v2x\v2x_integrated
+python your_controller_script.py
+```
 
-│   ├── i2i\_corridor\_test.py
+Replace `your_controller_script.py` with the actual controller filename.
 
-│   ├── v2i\_i2i\_test.py
+## Results and Evaluation
 
-│   └── v2i\_signal\_test.py
+The results directory is reserved for simulation outputs and experiment data.
 
-│
+Evaluation metrics include:
 
-├── v2v\_stress\_test/
+- Ambulance travel time.
+- Ambulance delay at intersections.
+- Emergency-message detection time.
+- Vehicle response time.
+- Lane-change completion time.
+- Number of responding vehicles.
+- Traffic-light preemption response time.
+- Intersection clearance time.
+- Comparison between normal traffic and V2X-assisted traffic.
 
-│   ├── edges.edg.xml
+## Future Work
 
-│   ├── network.net.xml
+- Expand traffic-density and route scenarios.
+- Perform additional integrated V2X stress tests.
+- Analyze and compare simulation performance.
+- Improve result visualization and reporting.
+- Explore real-world deployment considerations.
 
-│   ├── nodes.nod.xml
+## Cloud Integration
 
-│   ├── routes.rou.xml
+AWS cloud integration may be explored in a future phase. It is currently on hold and is not required to run the simulations.
 
-│   ├── simulation.sumocfg
+## Project Purpose
 
-│   ├── test.rou.xml
-
-│   ├── test.rou.alt.xml
-
-│   └── v2v\_stress\_test.py
-
-│
-
-├── .gitignore
-
-└── README.md
-
+This project develops a SUMO-based V2X framework to study how communication between emergency vehicles, surrounding vehicles, and road infrastructure can support coordinated ambulance movement through urban traffic.

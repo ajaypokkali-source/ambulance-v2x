@@ -2,6 +2,26 @@
 
 <routes>
 
+    <!--
+        routes_v2x.rou.xml
+
+        This is the v2v_stress_test baseline routes.rou.xml, UNCHANGED
+        in every existing vehicle/flow, plus additions needed for the
+        integrated V2X test:
+
+          - blocker_3 : a second overtake further down the corridor,
+                        past J2, so the lane-change maneuver repeats
+                        after the ambulance has already been through
+                        one signal-preemption cycle.
+
+          - a couple of extra side-road vehicles timed to arrive at
+            J3 / J4 while the ambulance is near, so the intersection
+            V2V-yield logic and the multi-TLS V2I preemption both have
+            something to demonstrate at those junctions too.
+
+        Nothing below removes or shortens any of the original traffic.
+    -->
+
     <vType
         id="car"
         vClass="passenger"
@@ -30,6 +50,37 @@
         lcStrategic="0.0"
         lcCooperative="1.0"
         lcSpeedGain="0.0"
+        lcKeepRight="0.0"
+    />
+
+    <!--
+        blocker_car: same as "car" except its maxSpeed is capped well
+        below the ambulance's real-world average pace.
+
+        WHY THIS EXISTS: blocker_1/2/3 used to be plain type="car"
+        with departSpeed="8" - but departSpeed only sets the INITIAL
+        speed. With nothing capping them afterward, they freely
+        accelerate up toward "car"'s 13.89 m/s maxSpeed on open road,
+        which is close enough to the ambulance's real average pace
+        (after signal waits) that the closing rate becomes small and
+        timing-sensitive. That's why blocker_2 took 21s longer to get
+        caught between two otherwise-identical runs, and why blocker_3
+        (60m further ahead) was never caught at all in one run. Capping
+        blockers at 9 m/s keeps a solid, reliable closing margin against
+        the ambulance regardless of exact signal timing.
+    -->
+    <vType
+        id="blocker_car"
+        vClass="passenger"
+        accel="2.6"
+        decel="4.5"
+        sigma="0.2"
+        length="5"
+        minGap="2.5"
+        maxSpeed="9.0"
+        lcStrategic="1.0"
+        lcCooperative="1.0"
+        lcSpeedGain="1.0"
         lcKeepRight="0.0"
     />
 
@@ -106,18 +157,18 @@
 
 
     <!-- ================================================== -->
-    <!-- PRIMARY VEHICLE DIRECTLY AHEAD -->
+    <!-- PRIMARY VEHICLE DIRECTLY AHEAD (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <!--
-        This is the important vehicle.
+        This is the proven baseline vehicle.
 
         It starts in the SAME lane as the ambulance.
 
         Ambulance:
             position = 20 m
 
-        blocker:
+        blocker_1:
             position = 115 m
 
         Initial separation:
@@ -126,7 +177,7 @@
 
     <vehicle
         id="blocker_1"
-        type="car"
+        type="blocker_car"
         route="main_forward"
         depart="20"
         departLane="0"
@@ -136,12 +187,12 @@
 
 
     <!-- ================================================== -->
-    <!-- SECOND VEHICLE AHEAD -->
+    <!-- SECOND VEHICLE AHEAD (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <vehicle
         id="blocker_2"
-        type="car"
+        type="blocker_car"
         route="main_forward"
         depart="20"
         departLane="0"
@@ -151,7 +202,30 @@
 
 
     <!-- ================================================== -->
-    <!-- ADJACENT-LANE TRAFFIC -->
+    <!-- THIRD VEHICLE, FURTHER DOWN J1_J2                   -->
+    <!-- NEW: a third same-lane blocker so the maneuver      -->
+    <!-- repeats a second time, carrying into J2_J3 (past    -->
+    <!-- the J2 signal) since it enters the corridor slowly  -->
+    <!-- and is caught up with there.                        -->
+    <!--                                                      -->
+    <!-- Departs on the SAME edge as the ambulance (like      -->
+    <!-- blocker_1 / blocker_2) so its distance to the        -->
+    <!-- ambulance is unambiguous from the moment it departs. -->
+    <!-- ================================================== -->
+
+    <vehicle
+        id="blocker_3"
+        type="blocker_car"
+        route="main_forward"
+        depart="20"
+        departLane="0"
+        departPos="235"
+        departSpeed="8"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- ADJACENT-LANE TRAFFIC (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <vehicle
@@ -174,9 +248,22 @@
         departSpeed="10"
     />
 
+    <!-- NEW: adjacent-lane traffic near J2_J3 / J3_J4 so the
+         lane-1 corridor stays populated past the first signal. -->
+
+    <vehicle
+        id="lane1_car_3"
+        type="car"
+        route="main_forward"
+        depart="45"
+        departLane="1"
+        departPos="20"
+        departSpeed="10"
+    />
+
 
     <!-- ================================================== -->
-    <!-- NORMAL FORWARD TRAFFIC -->
+    <!-- NORMAL FORWARD TRAFFIC (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <vehicle
@@ -244,7 +331,7 @@
 
 
     <!-- ================================================== -->
-    <!-- REVERSE TRAFFIC -->
+    <!-- REVERSE TRAFFIC (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <vehicle
@@ -294,7 +381,7 @@
 
 
     <!-- ================================================== -->
-    <!-- SIDE ROAD TRAFFIC -->
+    <!-- SIDE ROAD TRAFFIC (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <vehicle
@@ -363,7 +450,30 @@
 
 
     <!-- ================================================== -->
-    <!-- CONTINUOUS TRAFFIC -->
+    <!-- NEW: EXTRA SIDE-ROAD ARRIVALS TIMED NEAR J3 / J4    -->
+    <!-- so the intersection-yield + multi-TLS V2I logic has -->
+    <!-- traffic to demonstrate on later junctions too.      -->
+    <!-- ================================================== -->
+
+    <vehicle
+        id="J3N_1"
+        type="car"
+        route="J3N_to_main"
+        depart="58"
+        departSpeed="max"
+    />
+
+    <vehicle
+        id="J4S_1"
+        type="car"
+        route="J4S_to_main"
+        depart="66"
+        departSpeed="max"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- CONTINUOUS TRAFFIC (baseline, unchanged) -->
     <!-- ================================================== -->
 
     <flow
