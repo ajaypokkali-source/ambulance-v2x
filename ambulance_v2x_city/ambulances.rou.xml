@@ -1,0 +1,47 @@
+<routes>
+
+    <!-- Emergency vehicle type. NOTE: SUMO's blue-light device is
+         switched OFF on purpose. With it on, SUMO ambulances simply
+         drive through red lights, so there would be nothing for
+         V2I/I2I preemption to improve. Here the ambulance obeys
+         signals and only gets a green via V2X. -->
+    <vType id="ambulance" vClass="emergency" guiShape="emergency"
+           accel="3.5" decel="5.0" sigma="0.1" length="6" minGap="2.0"
+           maxSpeed="16.67" speedFactor="1.15" lcStrategic="0.0"
+           lcCooperative="1.0" lcSpeedGain="3.0">
+        <param key="has.bluelight.device" value="false"/>
+    </vType>
+
+    <vehicle id="amb1" type="ambulance" depart="20" color="1,0,0">
+        <route edges="W0_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_E0"/>
+    </vehicle>
+
+    <vehicle id="amb2" type="ambulance" depart="30" color="0,0.4,1">
+        <route edges="E1_J10 J10_J9 J9_J8 J8_J7 J7_J6 J6_W1"/>
+    </vehicle>
+
+    <vehicle id="amb3" type="ambulance" depart="40" color="1,0,1">
+        <route edges="S3_J3 J3_J4 J4_J5 J5_J10 J10_E1"/>
+    </vehicle>
+
+    <vehicle id="amb4" type="ambulance" depart="170" color="1,0.5,0">
+        <route edges="N5_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_W0"/>
+    </vehicle>
+
+    <vehicle id="amb5" type="ambulance" depart="190" color="0,0.7,0.3">
+        <route edges="W1_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J5 J5_S5"/>
+    </vehicle>
+
+    <vehicle id="amb6" type="ambulance" depart="330" color="0.6,0,1">
+        <route edges="S1_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_J10 J10_N5"/>
+    </vehicle>
+
+    <vehicle id="amb7" type="ambulance" depart="350" color="0,0.8,0.8">
+        <route edges="E0_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_J6 J6_W1"/>
+    </vehicle>
+
+    <vehicle id="amb8" type="ambulance" depart="370" color="1,0.8,0">
+        <route edges="N3_J8 J8_J3 J3_J2 J2_J1 J1_S1"/>
+    </vehicle>
+
+</routes>

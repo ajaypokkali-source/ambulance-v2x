@@ -1,0 +1,28 @@
+<configuration>
+
+    <input>
+        <net-file value="network.net.xml"/>
+        <route-files value="ambulances.rou.xml,traffic.rou.xml"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="900"/>
+        <step-length value="0.5"/>
+    </time>
+
+    <processing>
+        <time-to-teleport value="-1"/>
+    </processing>
+
+    <gui_only>
+        <gui-settings-file value="gui-settings.xml"/>
+    </gui_only>
+
+    <report>
+        <verbose value="false"/>
+        <duration-log.disable value="true"/>
+        <no-warnings value="true"/>
+    </report>
+
+</configuration>
