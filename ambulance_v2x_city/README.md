@@ -61,3 +61,10 @@ Edit the AMBULANCES list at the top of build_network.py to change routes/times.
   and the other waits (see amb8).
 - All V2I/I2I messages pass through `Channel` in v2x_city.py. Replace its
   latency/loss with real ns-3 NR-V2X results to couple the two simulators.
+
+## Tips
+- Zoom: mouse wheel zooms at the cursor; the magnifier icon in the toolbar
+  opens a dialog to type an exact zoom/position.
+- `./run.sh --focus J3 --zoom 450` starts zoomed in on one junction.
+- `--track` locks the camera to an ambulance, so free pan/zoom is disabled
+  while it is on.
