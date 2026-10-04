@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes>
+
+    <!--
+        routes.rou.xml  (v2x_multi)
+
+        Bigger corridor, same conventions as v2x_integrated's
+        routes.rou.xml: same vTypes (car / ambulance / blocker_car),
+        same style of per-junction side routes and flows, just
+        generalized from 5 main nodes (J1..J5, 3 signals) to 12 main
+        nodes (J1..J12, 10 signals: J2..J11), and from ONE ambulance to
+        THREE (ambulance_1, ambulance_2, ambulance_3), each with its
+        own dedicated same-lane blocker so the V2V overtake maneuver is
+        demonstrated independently for every ambulance, not just the
+        first one.
+
+        IMPORTANT (fixed in this revision): every <vehicle> and <flow>
+        below is emitted in a SINGLE block sorted by depart/begin time.
+        SUMO's route loader requires elements to appear in non-decreasing
+        departure order - earlier versions of this generator wrote
+        vehicles in topic groups (ambulances, then blockers, then lane1
+        cars, then background cars/reverses, then flows), which put
+        later-departing vehicles (e.g. ambulance_1 at t=20) BEFORE
+        earlier-departing ones still to come later in the file (car1 at
+        t=5, car2 at t=10, car3 at t=15, and - crucially - the
+        forward_flow/reverse_flow/side flows beginning at t=60, which
+        landed after ambulance_2 at t=70 only by luck and before other
+        later one-off vehicles). An unsorted route file is exactly the
+        kind of defect that can cause some vehicles to silently never
+        be inserted by SUMO rather than erroring - which matched the
+        observed symptom (blocker_1 and blocker_2 never appearing)
+        closely enough that it's fixed here regardless of whether it
+        turns out to be the full explanation.
+    -->
+
+    <vType
+        id="car"
+        vClass="passenger"
+        accel="2.6"
+        decel="4.5"
+        sigma="0.2"
+        length="5"
+        minGap="2.5"
+        maxSpeed="13.89"
+        lcStrategic="1.0"
+        lcCooperative="1.0"
+        lcSpeedGain="1.0"
+        lcKeepRight="0.0"
+    />
+
+    <vType
+        id="ambulance"
+        vClass="emergency"
+        accel="3.5"
+        decel="5.0"
+        sigma="0.1"
+        length="6"
+        minGap="2.0"
+        maxSpeed="16.67"
+        color="1,0,0"
+        lcStrategic="0.0"
+        lcCooperative="1.0"
+        lcSpeedGain="0.0"
+        lcKeepRight="0.0"
+    />
+
+    <!--
+        blocker_car: same as v2x_integrated - maxSpeed capped well below
+        the ambulance's real-world average pace, so every blocker has a
+        reliable, timing-independent closing margin against whichever
+        ambulance is catching up to it (see the long comment in
+        v2x_integrated/routes.rou.xml for the full story on why this
+        matters - departSpeed alone is not enough).
+    -->
+    <vType
+        id="blocker_car"
+        vClass="passenger"
+        accel="2.6"
+        decel="4.5"
+        sigma="0.2"
+        length="5"
+        minGap="2.5"
+        maxSpeed="9.0"
+        lcStrategic="1.0"
+        lcCooperative="1.0"
+        lcSpeedGain="1.0"
+        lcKeepRight="0.0"
+    />
+
+
+    <!-- MAIN CORRIDOR -->
+
+    <route
+        id="main_forward"
+        edges="J1_J2 J2_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="main_reverse"
+        edges="J12_J11 J11_J10 J10_J9 J9_J8 J8_J7 J7_J6 J6_J5 J5_J4 J4_J3 J3_J2 J2_J1"
+    />
+
+
+    <!-- SIDE ROADS (every junction EXCEPT the terminal J12,
+         exactly mirroring v2x_integrated's omission of J5-side
+         routes - a side road at the very last node would have
+         nowhere forward to go). -->
+
+    <route
+        id="J1N_to_main"
+        edges="J1N_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J1S_to_main"
+        edges="J1S_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J2N_to_main"
+        edges="J2N_J2 J2_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J2S_to_main"
+        edges="J2S_J2 J2_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J3N_to_main"
+        edges="J3N_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J3S_to_main"
+        edges="J3S_J3 J3_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J4N_to_main"
+        edges="J4N_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J4S_to_main"
+        edges="J4S_J4 J4_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J5N_to_main"
+        edges="J5N_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J5S_to_main"
+        edges="J5S_J5 J5_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J6N_to_main"
+        edges="J6N_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J6S_to_main"
+        edges="J6S_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J7N_to_main"
+        edges="J7N_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J7S_to_main"
+        edges="J7S_J7 J7_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J8N_to_main"
+        edges="J8N_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J8S_to_main"
+        edges="J8S_J8 J8_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J9N_to_main"
+        edges="J9N_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J9S_to_main"
+        edges="J9S_J9 J9_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J10N_to_main"
+        edges="J10N_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J10S_to_main"
+        edges="J10S_J10 J10_J11 J11_J12"
+    />
+
+    <route
+        id="J11N_to_main"
+        edges="J11N_J11 J11_J12"
+    />
+
+    <route
+        id="J11S_to_main"
+        edges="J11S_J11 J11_J12"
+    />
+
+
+    <!-- ================================================== -->
+    <!-- AMBULANCES (3, staggered departures), their        -->
+    <!-- dedicated blockers, adjacent-lane traffic, general -->
+    <!-- background traffic, and continuous flows - ALL     -->
+    <!-- merged below in one depart/begin-time-sorted block -->
+    <!-- (see the long comment at the top of this file).    -->
+    <!--                                                      -->
+    <!-- Spacing rationale: ambulance_1 and ambulance_2 are   -->
+    <!-- only 50s apart (well clear of each other physically  -->
+    <!-- at cruise speed - about 800m - so they never collide -->
+    <!-- or contend for the same lane), but close enough that -->
+    <!-- while ambulance_1 is still working its way through   -->
+    <!-- the back half of the corridor, ambulance_2 is        -->
+    <!-- already active at the front half - so the controller -->
+    <!-- genuinely has TWO independent emergency corridors     -->
+    <!-- open across different junctions at the same time.    -->
+    <!-- ambulance_3 departs much later (190s) so it gets a    -->
+    <!-- clean run once the first two have mostly cleared,     -->
+    <!-- demonstrating the system also works back-to-back, not -->
+    <!-- just concurrently.                                    -->
+    <!-- ================================================== -->
+
+    <vehicle id="car0" type="car" route="main_forward" depart="0" departLane="1" departSpeed="max"/>
+
+    <vehicle id="reverse0" type="car" route="main_reverse" depart="4" departLane="0" departSpeed="max"/>
+
+    <vehicle id="car1" type="car" route="main_forward" depart="5" departLane="0" departSpeed="max"/>
+
+    <vehicle id="car2" type="car" route="main_forward" depart="10" departLane="1" departSpeed="max"/>
+
+    <vehicle id="reverse1" type="car" route="main_reverse" depart="11" departLane="1" departSpeed="max"/>
+
+    <vehicle id="car3" type="car" route="main_forward" depart="15" departLane="0" departSpeed="max"/>
+
+    <vehicle id="reverse2" type="car" route="main_reverse" depart="18" departLane="0" departSpeed="max"/>
+
+    <vehicle
+        id="ambulance_1"
+        type="ambulance"
+        route="main_forward"
+        depart="20"
+        departLane="0"
+        departPos="20"
+        departSpeed="max"
+    />
+
+    <vehicle
+        id="blocker_1"
+        type="blocker_car"
+        route="main_forward"
+        depart="20"
+        departLane="0"
+        departPos="115"
+        departSpeed="8"
+    />
+
+    <vehicle
+        id="lane1_car_1"
+        type="car"
+        route="main_forward"
+        depart="20"
+        departLane="1"
+        departPos="55"
+        departSpeed="10"
+    />
+
+    <vehicle id="car4" type="car" route="main_forward" depart="40" departLane="1" departSpeed="max"/>
+
+    <vehicle id="reverse3" type="car" route="main_reverse" depart="45" departLane="1" departSpeed="max"/>
+
+    <vehicle id="car5" type="car" route="main_forward" depart="55" departLane="0" departSpeed="max"/>
+
+    <flow
+        id="forward_flow"
+        type="car"
+        route="main_forward"
+        begin="60"
+        end="600"
+        period="6"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="reverse_flow"
+        type="car"
+        route="main_reverse"
+        begin="60"
+        end="600"
+        period="8"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J1N_flow"
+        type="car"
+        route="J1N_to_main"
+        begin="60"
+        end="600"
+        period="13"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J1S_flow"
+        type="car"
+        route="J1S_to_main"
+        begin="65"
+        end="600"
+        period="16"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle
+        id="ambulance_2"
+        type="ambulance"
+        route="main_forward"
+        depart="70"
+        departLane="0"
+        departPos="20"
+        departSpeed="max"
+    />
+
+    <vehicle
+        id="blocker_2"
+        type="blocker_car"
+        route="main_forward"
+        depart="70"
+        departLane="0"
+        departPos="115"
+        departSpeed="8"
+    />
+
+    <vehicle
+        id="lane1_car_2"
+        type="car"
+        route="main_forward"
+        depart="70"
+        departLane="1"
+        departPos="55"
+        departSpeed="10"
+    />
+
+    <flow
+        id="J2N_flow"
+        type="car"
+        route="J2N_to_main"
+        begin="70"
+        end="600"
+        period="14"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J2S_flow"
+        type="car"
+        route="J2S_to_main"
+        begin="75"
+        end="600"
+        period="18"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle id="reverse4" type="car" route="main_reverse" depart="80" departLane="0" departSpeed="max"/>
+
+    <flow
+        id="J3N_flow"
+        type="car"
+        route="J3N_to_main"
+        begin="80"
+        end="600"
+        period="15"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J3S_flow"
+        type="car"
+        route="J3S_to_main"
+        begin="85"
+        end="600"
+        period="20"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J4N_flow"
+        type="car"
+        route="J4N_to_main"
+        begin="90"
+        end="600"
+        period="17"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J4S_flow"
+        type="car"
+        route="J4S_to_main"
+        begin="95"
+        end="600"
+        period="19"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle id="car6" type="car" route="main_forward" depart="100" departLane="1" departSpeed="max"/>
+
+    <flow
+        id="J5N_flow"
+        type="car"
+        route="J5N_to_main"
+        begin="100"
+        end="600"
+        period="16"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J5S_flow"
+        type="car"
+        route="J5S_to_main"
+        begin="105"
+        end="600"
+        period="14"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J6N_flow"
+        type="car"
+        route="J6N_to_main"
+        begin="110"
+        end="600"
+        period="18"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J6S_flow"
+        type="car"
+        route="J6S_to_main"
+        begin="115"
+        end="600"
+        period="15"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J7N_flow"
+        type="car"
+        route="J7N_to_main"
+        begin="120"
+        end="600"
+        period="20"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J7S_flow"
+        type="car"
+        route="J7S_to_main"
+        begin="125"
+        end="600"
+        period="17"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle id="car7" type="car" route="main_forward" depart="130" departLane="0" departSpeed="max"/>
+
+    <flow
+        id="J8N_flow"
+        type="car"
+        route="J8N_to_main"
+        begin="130"
+        end="600"
+        period="19"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J8S_flow"
+        type="car"
+        route="J8S_to_main"
+        begin="135"
+        end="600"
+        period="16"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J9N_flow"
+        type="car"
+        route="J9N_to_main"
+        begin="140"
+        end="600"
+        period="14"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J9S_flow"
+        type="car"
+        route="J9S_to_main"
+        begin="145"
+        end="600"
+        period="18"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle id="reverse5" type="car" route="main_reverse" depart="150" departLane="1" departSpeed="max"/>
+
+    <flow
+        id="J10N_flow"
+        type="car"
+        route="J10N_to_main"
+        begin="150"
+        end="600"
+        period="15"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J10S_flow"
+        type="car"
+        route="J10S_to_main"
+        begin="155"
+        end="600"
+        period="20"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle id="car8" type="car" route="main_forward" depart="160" departLane="1" departSpeed="max"/>
+
+    <flow
+        id="J11N_flow"
+        type="car"
+        route="J11N_to_main"
+        begin="160"
+        end="600"
+        period="17"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <flow
+        id="J11S_flow"
+        type="car"
+        route="J11S_to_main"
+        begin="165"
+        end="600"
+        period="19"
+        departLane="random"
+        departSpeed="max"
+    />
+
+    <vehicle id="car9" type="car" route="main_forward" depart="175" departLane="0" departSpeed="max"/>
+
+    <vehicle id="reverse6" type="car" route="main_reverse" depart="185" departLane="0" departSpeed="max"/>
+
+    <vehicle
+        id="ambulance_3"
+        type="ambulance"
+        route="main_forward"
+        depart="190"
+        departLane="0"
+        departPos="20"
+        departSpeed="max"
+    />
+
+    <vehicle
+        id="blocker_3"
+        type="blocker_car"
+        route="main_forward"
+        depart="190"
+        departLane="0"
+        departPos="115"
+        departSpeed="8"
+    />
+
+    <vehicle
+        id="lane1_car_3"
+        type="car"
+        route="main_forward"
+        depart="190"
+        departLane="1"
+        departPos="55"
+        departSpeed="10"
+    />
+
+</routes>

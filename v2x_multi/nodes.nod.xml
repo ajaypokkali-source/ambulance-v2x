@@ -1,0 +1,57 @@
+<nodes>
+
+    <!-- ================================================== -->
+    <!-- MAIN CORRIDOR                                       -->
+    <!--                                                      -->
+    <!-- Same linear-corridor pattern as v2x_integrated's    -->
+    <!-- nodes.nod.xml, extended from 5 main nodes (3 TLS)   -->
+    <!-- to 12 main nodes (10 TLS: J2..J11). J1 and J12 stay  -->
+    <!-- "priority" corridor entry/exit, exactly like J1/J5  -->
+    <!-- did in v2x_integrated.                              -->
+    <!-- ================================================== -->
+
+    <node id="J1" x="0" y="0" type="priority"/>
+    <node id="J2" x="300" y="0" type="traffic_light"/>
+    <node id="J3" x="600" y="0" type="traffic_light"/>
+    <node id="J4" x="900" y="0" type="traffic_light"/>
+    <node id="J5" x="1200" y="0" type="traffic_light"/>
+    <node id="J6" x="1500" y="0" type="traffic_light"/>
+    <node id="J7" x="1800" y="0" type="traffic_light"/>
+    <node id="J8" x="2100" y="0" type="traffic_light"/>
+    <node id="J9" x="2400" y="0" type="traffic_light"/>
+    <node id="J10" x="2700" y="0" type="traffic_light"/>
+    <node id="J11" x="3000" y="0" type="traffic_light"/>
+    <node id="J12" x="3300" y="0" type="priority"/>
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROADS (every main junction gets an N/S pair,   -->
+    <!-- exactly like v2x_integrated)                        -->
+    <!-- ================================================== -->
+
+    <node id="J1_N" x="0" y="250" type="priority"/>
+    <node id="J1_S" x="0" y="-250" type="priority"/>
+    <node id="J2_N" x="300" y="250" type="priority"/>
+    <node id="J2_S" x="300" y="-250" type="priority"/>
+    <node id="J3_N" x="600" y="250" type="priority"/>
+    <node id="J3_S" x="600" y="-250" type="priority"/>
+    <node id="J4_N" x="900" y="250" type="priority"/>
+    <node id="J4_S" x="900" y="-250" type="priority"/>
+    <node id="J5_N" x="1200" y="250" type="priority"/>
+    <node id="J5_S" x="1200" y="-250" type="priority"/>
+    <node id="J6_N" x="1500" y="250" type="priority"/>
+    <node id="J6_S" x="1500" y="-250" type="priority"/>
+    <node id="J7_N" x="1800" y="250" type="priority"/>
+    <node id="J7_S" x="1800" y="-250" type="priority"/>
+    <node id="J8_N" x="2100" y="250" type="priority"/>
+    <node id="J8_S" x="2100" y="-250" type="priority"/>
+    <node id="J9_N" x="2400" y="250" type="priority"/>
+    <node id="J9_S" x="2400" y="-250" type="priority"/>
+    <node id="J10_N" x="2700" y="250" type="priority"/>
+    <node id="J10_S" x="2700" y="-250" type="priority"/>
+    <node id="J11_N" x="3000" y="250" type="priority"/>
+    <node id="J11_S" x="3000" y="-250" type="priority"/>
+    <node id="J12_N" x="3300" y="250" type="priority"/>
+    <node id="J12_S" x="3300" y="-250" type="priority"/>
+
+</nodes>

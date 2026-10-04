@@ -1,0 +1,479 @@
+<edges>
+
+    <!-- ================================================== -->
+    <!-- MAIN CORRIDOR — FORWARD DIRECTION -->
+    <!-- ================================================== -->
+
+    <edge id="J1_J2"
+          from="J1"
+          to="J2"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J2_J3"
+          from="J2"
+          to="J3"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J3_J4"
+          from="J3"
+          to="J4"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J4_J5"
+          from="J4"
+          to="J5"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J5_J6"
+          from="J5"
+          to="J6"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J6_J7"
+          from="J6"
+          to="J7"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J7_J8"
+          from="J7"
+          to="J8"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J8_J9"
+          from="J8"
+          to="J9"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J9_J10"
+          from="J9"
+          to="J10"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J10_J11"
+          from="J10"
+          to="J11"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J11_J12"
+          from="J11"
+          to="J12"
+          numLanes="2"
+          speed="13.89"/>
+
+    <!-- ================================================== -->
+    <!-- MAIN CORRIDOR — REVERSE DIRECTION -->
+    <!-- ================================================== -->
+
+    <edge id="J12_J11"
+          from="J12"
+          to="J11"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J11_J10"
+          from="J11"
+          to="J10"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J10_J9"
+          from="J10"
+          to="J9"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J9_J8"
+          from="J9"
+          to="J8"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J8_J7"
+          from="J8"
+          to="J7"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J7_J6"
+          from="J7"
+          to="J6"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J6_J5"
+          from="J6"
+          to="J5"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J5_J4"
+          from="J5"
+          to="J4"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J4_J3"
+          from="J4"
+          to="J3"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J3_J2"
+          from="J3"
+          to="J2"
+          numLanes="2"
+          speed="13.89"/>
+
+    <edge id="J2_J1"
+          from="J2"
+          to="J1"
+          numLanes="2"
+          speed="13.89"/>
+
+    <!-- ================================================== -->
+    <!-- J1 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J1N_J1"
+          from="J1_N"
+          to="J1"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J1_J1N"
+          from="J1"
+          to="J1_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J1S_J1"
+          from="J1_S"
+          to="J1"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J1_J1S"
+          from="J1"
+          to="J1_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J2 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J2N_J2"
+          from="J2_N"
+          to="J2"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J2_J2N"
+          from="J2"
+          to="J2_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J2S_J2"
+          from="J2_S"
+          to="J2"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J2_J2S"
+          from="J2"
+          to="J2_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J3 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J3N_J3"
+          from="J3_N"
+          to="J3"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J3_J3N"
+          from="J3"
+          to="J3_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J3S_J3"
+          from="J3_S"
+          to="J3"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J3_J3S"
+          from="J3"
+          to="J3_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J4 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J4N_J4"
+          from="J4_N"
+          to="J4"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J4_J4N"
+          from="J4"
+          to="J4_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J4S_J4"
+          from="J4_S"
+          to="J4"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J4_J4S"
+          from="J4"
+          to="J4_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J5 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J5N_J5"
+          from="J5_N"
+          to="J5"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J5_J5N"
+          from="J5"
+          to="J5_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J5S_J5"
+          from="J5_S"
+          to="J5"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J5_J5S"
+          from="J5"
+          to="J5_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J6 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J6N_J6"
+          from="J6_N"
+          to="J6"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J6_J6N"
+          from="J6"
+          to="J6_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J6S_J6"
+          from="J6_S"
+          to="J6"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J6_J6S"
+          from="J6"
+          to="J6_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J7 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J7N_J7"
+          from="J7_N"
+          to="J7"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J7_J7N"
+          from="J7"
+          to="J7_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J7S_J7"
+          from="J7_S"
+          to="J7"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J7_J7S"
+          from="J7"
+          to="J7_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J8 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J8N_J8"
+          from="J8_N"
+          to="J8"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J8_J8N"
+          from="J8"
+          to="J8_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J8S_J8"
+          from="J8_S"
+          to="J8"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J8_J8S"
+          from="J8"
+          to="J8_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J9 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J9N_J9"
+          from="J9_N"
+          to="J9"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J9_J9N"
+          from="J9"
+          to="J9_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J9S_J9"
+          from="J9_S"
+          to="J9"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J9_J9S"
+          from="J9"
+          to="J9_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J10 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J10N_J10"
+          from="J10_N"
+          to="J10"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J10_J10N"
+          from="J10"
+          to="J10_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J10S_J10"
+          from="J10_S"
+          to="J10"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J10_J10S"
+          from="J10"
+          to="J10_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J11 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J11N_J11"
+          from="J11_N"
+          to="J11"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J11_J11N"
+          from="J11"
+          to="J11_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J11S_J11"
+          from="J11_S"
+          to="J11"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J11_J11S"
+          from="J11"
+          to="J11_S"
+          numLanes="1"
+          speed="11.11"/>
+
+    <!-- ================================================== -->
+    <!-- J12 SIDE ROADS -->
+    <!-- ================================================== -->
+
+    <edge id="J12N_J12"
+          from="J12_N"
+          to="J12"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J12_J12N"
+          from="J12"
+          to="J12_N"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J12S_J12"
+          from="J12_S"
+          to="J12"
+          numLanes="1"
+          speed="11.11"/>
+
+    <edge id="J12_J12S"
+          from="J12"
+          to="J12_S"
+          numLanes="1"
+          speed="11.11"/>
+
+</edges>
