@@ -19,10 +19,12 @@ LANE_CHANGE_DURATION = 5.0
 # SUMO CONFIGURATION
 # ============================================================
 
+import os
+
 sumo_cmd = [
     "sumo-gui",
     "-c",
-    r"C:\ambulance_v2x\simulation\simulation.sumocfg"
+    os.path.join(os.path.dirname(__file__), "simulation.sumocfg")
 ]
 
 
@@ -31,6 +33,20 @@ sumo_cmd = [
 # ============================================================
 
 traci.start(sumo_cmd)
+
+import csv
+
+trace_file = open("v2x_mobility.csv", "w", newline="")
+trace_writer = csv.writer(trace_file)
+
+trace_writer.writerow([
+    "time",
+    "vehicle_id",
+    "x",
+    "y",
+    "speed",
+    "angle"
+])
 
 print("Connected to SUMO!")
 
@@ -74,6 +90,26 @@ while traci.simulation.getMinExpectedNumber() > 0:
     # ========================================================
 
     traci.simulationStep()
+
+    current_time = traci.simulation.getTime()
+
+    for vehicle_id in traci.vehicle.getIDList():
+        try:
+            x, y = traci.vehicle.getPosition(vehicle_id)
+            speed = traci.vehicle.getSpeed(vehicle_id)
+            angle = traci.vehicle.getAngle(vehicle_id)
+
+            trace_writer.writerow([
+                current_time,
+                vehicle_id,
+                x,
+                y,
+                speed,
+                angle
+            ])
+
+        except traci.TraCIException:
+            pass
 
     vehicles = traci.vehicle.getIDList()
 
@@ -1014,6 +1050,7 @@ while traci.simulation.getMinExpectedNumber() > 0:
 # CLOSE TRACI
 # ============================================================
 
+trace_file.close()
 traci.close()
 
 print("\nSimulation finished.")

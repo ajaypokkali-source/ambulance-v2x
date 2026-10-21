@@ -45,3 +45,19 @@ Desktop.ini
 
 *.tmp
 *.bak
+# Python runtime files and simulation logs
+__pycache__/
+*.py[cod]
+*.log
+
+# Python runtime files and simulation logs
+__pycache__/
+*.py[cod]
+*.log
+
+# Backup and temporary files
+**/*backup*
+**/*before*
+**/*broken*
+*.log
+__pycache__/
