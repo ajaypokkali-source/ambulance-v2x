@@ -69,6 +69,63 @@ V2V_RANGE = 70.0          # m, cars this far ahead of an ambulance yield
 V2V_GAP_FRONT = 15.0      # m, free space needed ahead in the target lane
 V2V_GAP_REAR = 12.0       # m, free space needed behind in the target lane
 
+# ------------------------------------------------------------
+# Multi-hop V2V relay (opt-in via --relay; see find_relay_path()).
+#
+# With 300 m grid spacing and only a 100 m direct V2I radius, a signal
+# that hasn't been I2I-armed (every FIRST signal on a route has no
+# upstream neighbour to arm it) has a real ~200 m blind zone. --relay
+# closes that gap using whatever background traffic happens to be
+# between the ambulance and the signal right now, instead of the
+# ambulance just going undetected until it drives into direct range.
+# ------------------------------------------------------------
+V2V_RELAY_RANGE = 90.0    # m, vehicle-to-vehicle range for forwarding a beacon
+MAX_RELAY_HOPS = 3        # max relay hops before giving up on a path
+RELAY_HOP_DELAY = 0.15    # s, modelled store-and-forward delay charged per hop
+
+
+def euclidean(a, b):
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
+
+
+def find_relay_path(amb, amb_pos, sig_pos, radius, positions, alive):
+    """
+    Bounded BFS flood from the ambulance over the live V2V connectivity
+    graph (this step's actual vehicle positions), looking for a chain of
+    real vehicles that can carry a V2I beacon to a signal currently out
+    of `amb`'s own direct/I2I-armed range (`radius`).
+
+    Returns (reachable, hop_count, chain). chain is the list of relaying
+    vehicle IDs for the first (shortest-hop) path BFS finds - a flooded
+    broadcast request naturally resolves to whichever relay chain gets it
+    there in the fewest hops, since every reachable vehicle re-broadcasts
+    once and the signal acts on the first copy to arrive.
+    """
+    visited = {amb}
+    frontier = [(amb, amb_pos, [])]
+
+    for hop in range(1, MAX_RELAY_HOPS + 1):
+        next_frontier = []
+        for node_id, node_pos, chain in frontier:
+            for other_id in alive:
+                if other_id in visited:
+                    continue
+                other_pos = positions.get(other_id)
+                if other_pos is None:
+                    continue
+                if euclidean(node_pos, other_pos) > V2V_RELAY_RANGE:
+                    continue
+                visited.add(other_id)
+                new_chain = chain + [other_id]
+                if euclidean(other_pos, sig_pos) <= radius:
+                    return True, hop, new_chain
+                next_frontier.append((other_id, other_pos, new_chain))
+        frontier = next_frontier
+        if not frontier:
+            break
+
+    return False, None, None
+
 
 def load_ambulances():
     """Ambulance ids, in departure order, from ambulances.rou.xml."""
@@ -97,12 +154,14 @@ class Channel:
         self.sent = 0
         self.dropped = 0
 
-    def send(self, now, kind, src, dst, payload):
+    def send(self, now, kind, src, dst, payload, extra_latency=0.0):
         self.sent += 1
         if self.rng.random() < self.loss:
             self.dropped += 1
             return
-        self.queue.append((now + self.latency, kind, src, dst, payload))
+        self.queue.append(
+            (now + self.latency + extra_latency, kind, src, dst, payload)
+        )
 
     def deliver(self, now):
         due = [m for m in self.queue if m[0] <= now]
@@ -127,7 +186,8 @@ class Signal:
         self.mode = Signal.NORMAL
         self.until = 0.0
         self.target = None
-        self.via = {}       # amb -> "V2I" | "I2I"
+        self.via = {}       # amb -> "V2I" | "I2I" | "RELAY"
+        self.relay_chain = {}  # amb -> list of relaying vehicle IDs (RELAY only)
         self.since = 0.0
         self.ring = f"ring_{tid}"
         self.ring_color = None
@@ -181,6 +241,7 @@ class Signal:
                        self.since, now))
         log(f"[V2I] {self.id}: {self.owner} cleared -> released")
         self.heard.pop(self.owner, None)
+        self.relay_chain.pop(self.owner, None)
         self.owner = None
         self.mode = Signal.NORMAL
 
@@ -194,10 +255,13 @@ class Signal:
 
 RING_COLORS = {
     "armed": (255, 165, 0, 110),
+    "relay": (170, 60, 220, 130),
     "clearing": (255, 230, 0, 130),
     "green": (0, 220, 60, 130),
     None: (0, 0, 0, 0),
 }
+
+RELAY_LINE_COLOR = (170, 60, 220, 220)
 
 
 def make_ring(sig):
@@ -273,8 +337,8 @@ BOARD_HEAD = ["SIGNAL RINGS:  ORANGE = warned by I2I   YELLOW = clearing   "
               "to the next"]
 
 
-def gui_board(feed):
-    lines = BOARD_HEAD + list(feed)[-4:]
+def gui_board(feed, head=BOARD_HEAD):
+    lines = head + list(feed)[-4:]
     path, w, h = overlay.board(lines)
     if "board" in traci.poi.getIDList():
         traci.poi.setImageFile("board", path)
@@ -300,6 +364,50 @@ def i2i_prune(lines, alive, ahead):
     for key, pid in list(lines.items()):
         _, dst, amb = key
         if amb not in alive or dst not in ahead.get(amb, ()):
+            try:
+                traci.polygon.remove(pid)
+            except traci.TraCIException:
+                pass
+            del lines[key]
+
+
+def relay_line_update(tid, amb, chain, amb_pos, sig_pos, positions, lines):
+    """Draw (or move) a polyline through the ambulance's actual relay
+    chain - ambulance -> each relaying vehicle's live position -> the
+    signal - while the signal is actively serving (clearing/green for) a
+    relay-sourced request."""
+    key = (tid, amb)
+    shape = [amb_pos]
+    for vid in chain:
+        pos = positions.get(vid)
+        if pos is not None:
+            shape.append(pos)
+    shape.append(sig_pos)
+    if len(shape) < 2:
+        return
+    pid = lines.get(key)
+    if pid is None:
+        pid = f"relay_{tid}_{amb}"
+        traci.polygon.add(pid, shape, RELAY_LINE_COLOR, fill=False,
+                          layer=16, lineWidth=5)
+        lines[key] = pid
+    else:
+        traci.polygon.setShape(pid, shape)
+
+
+def relay_prune(lines, signals, alive, now):
+    """Drop a relay-chain line once the signal is no longer actively
+    serving that relay-sourced request (released, expired, or the
+    ambulance left)."""
+    for key, pid in list(lines.items()):
+        tid, amb = key
+        sig = signals.get(tid)
+        still_active = (
+            sig is not None and amb in alive and sig.owner == amb
+            and sig.mode in (Signal.CLEARING, Signal.GREEN)
+            and sig.via.get(amb) == "RELAY"
+        )
+        if not still_active:
             try:
                 traci.polygon.remove(pid)
             except traci.TraCIException:
@@ -397,6 +505,12 @@ def main():
                     help="GUI delay per step in ms")
     ap.add_argument("--no-v2v", action="store_true",
                     help="signals only: skip V2V lane clearing")
+    ap.add_argument("--relay", action="store_true",
+                    help="when a signal is out of direct/I2I-armed range, "
+                         "try a multi-hop V2V relay through nearby vehicles "
+                         "instead of just waiting until the ambulance drives "
+                         "into range (opt-in; off by default, so every "
+                         "existing --baseline/--no-v2v/full run is unchanged)")
     ap.add_argument("--track", default=None,
                     help="GUI: lock the camera on a vehicle (e.g. amb1) or "
                          "'auto' for whichever ambulance is active. While "
@@ -430,12 +544,19 @@ def main():
         mode, tag = "V2X signals only (V2I + I2I)", "signals"
     else:
         mode, tag = "FULL V2X (V2V + V2I + I2I)", "full"
+    if args.relay and not args.baseline:
+        mode += " + multi-hop V2V RELAY"
+        tag += "_relay"
     print("=" * 74)
     print(f"  10-SIGNAL EMERGENCY CORRIDOR   {len(ambulances)} ambulances")
     print(f"  mode: {mode}")
     if not args.baseline:
         print(f"  channel: latency {args.latency * 1000:.0f} ms, "
               f"loss {args.loss * 100:.0f} %, beacon {args.beacon} s")
+        if args.relay:
+            print(f"  relay  : range {V2V_RELAY_RANGE:.0f} m, "
+                  f"max {MAX_RELAY_HOPS} hops, "
+                  f"{RELAY_HOP_DELAY * 1000:.0f} ms/hop")
     print("=" * 74)
 
     feed = []            # recent key events, shown on the GUI board
@@ -444,7 +565,7 @@ def main():
     def log(msg):
         t = traci.simulation.getTime()
         print(f"[{t:6.1f}s] {msg}")
-        if any(k in msg for k in ("[I2I]", "GREEN for", "arrived")):
+        if any(k in msg for k in ("[I2I]", "[RELAY]", "GREEN for", "arrived")):
             short = msg.replace("[V2I] ", "").replace("[SYSTEM] ", "")
             feed.append(f"{t:5.0f}s  {short}"[:100])
             feed_dirty[0] = True
@@ -452,6 +573,13 @@ def main():
     signals = {t: Signal(t) for t in traci.trafficlight.getIDList()}
     print(f"[SYSTEM] {len(signals)} traffic signals: "
           f"{', '.join(sorted(signals, key=lambda s: int(s[1:])))}")
+
+    board_head = BOARD_HEAD
+    if args.relay:
+        board_head = BOARD_HEAD + [
+            "PURPLE ring = request waiting on a relay chain   "
+            "PURPLE line = the live relay chain itself"
+        ]
 
     if not args.nogui:
         traci.gui.setSchema("View #0", "real world")
@@ -476,8 +604,11 @@ def main():
     last_edge = {}
     yielding = {}
     i2i_lines = {}
+    relay_lines = {}
     ahead = {}
     v2v_moves = 0
+    relay_delivered = 0
+    relay_no_path = 0
     step_len = traci.simulation.getDeltaT()
     tracked = None
 
@@ -486,6 +617,10 @@ def main():
         traci.simulationStep()
         now = traci.simulation.getTime()
         alive = set(traci.vehicle.getIDList())
+        # Snapshot every alive vehicle's position once per step (only when
+        # --relay is on) so find_relay_path() and the chain-line drawing
+        # below reuse it instead of re-issuing a TraCI call per candidate.
+        positions = {v: traci.vehicle.getPosition(v) for v in alive} if args.relay else {}
 
         if args.track and not args.nogui:
             want = None
@@ -533,8 +668,23 @@ def main():
                         edge != last_edge.get(amb) and not edge.startswith(":"))
                     last_edge[amb] = edge
             i2i_prune(i2i_lines, alive, ahead)
+            if args.relay:
+                for tid, sig in signals.items():
+                    if sig.mode not in (Signal.CLEARING, Signal.GREEN):
+                        continue
+                    amb = sig.owner
+                    if (amb is None or sig.via.get(amb) != "RELAY"
+                            or amb not in alive):
+                        continue
+                    chain = sig.relay_chain.get(amb, [])
+                    amb_p = positions.get(amb)
+                    sig_p = traci.junction.getPosition(tid)
+                    if amb_p is not None:
+                        relay_line_update(tid, amb, chain, amb_p, sig_p,
+                                          positions, relay_lines)
+                relay_prune(relay_lines, signals, alive, now)
             if feed_dirty[0]:
-                gui_board(feed)
+                gui_board(feed, board_head)
                 feed_dirty[0] = False
 
         if args.baseline:
@@ -551,6 +701,11 @@ def main():
                 if src not in sig.heard:
                     sig.via[src] = "I2I" if payload[1] > V2I_RADIUS else "V2I"
                 sig.heard[src] = (now, payload[0], payload[1])
+            elif kind == "V2I-RELAY":
+                if src not in sig.heard:
+                    sig.via[src] = "RELAY"
+                sig.heard[src] = (now, payload[0], payload[1])
+                sig.relay_chain[src] = payload[2]
             else:  # I2I
                 if not sig.is_armed(src, now):
                     log(f"[I2I] {payload} -> {dst}: {src} approaching, "
@@ -564,16 +719,35 @@ def main():
             if amb not in alive:
                 continue
             upcoming = traci.vehicle.getNextTLS(amb)
+            amb_pos = positions.get(amb) if args.relay else None
             for i, (tid, link, dist, _) in enumerate(upcoming):
                 if tid not in signals:
                     continue
                 sig = signals[tid]
                 radius = I2I_RADIUS if sig.is_armed(amb, now) else V2I_RADIUS
                 key = (amb, tid)
-                if (dist <= radius
-                        and now - last_beacon.get(key, -1e9) >= args.beacon):
-                    channel.send(now, "V2I", amb, tid, (link, dist))
-                    last_beacon[key] = now
+                ready = now - last_beacon.get(key, -1e9) >= args.beacon
+                if dist <= radius:
+                    if ready:
+                        channel.send(now, "V2I", amb, tid, (link, dist))
+                        last_beacon[key] = now
+                elif ready and args.relay:
+                    sig_pos = traci.junction.getPosition(tid)
+                    reachable, hops, chain = find_relay_path(
+                        amb, amb_pos, sig_pos, radius, positions, alive)
+                    if reachable:
+                        channel.send(now, "V2I-RELAY", amb, tid,
+                                     (link, dist, chain),
+                                     extra_latency=hops * RELAY_HOP_DELAY)
+                        last_beacon[key] = now
+                        relay_delivered += 1
+                        log(f"[RELAY] {amb} -> {tid}: {dist:.0f} m away "
+                            f"(direct/armed range is {radius:.0f} m) - "
+                            f"relayed via {' -> '.join(chain)} "
+                            f"({hops} hop{'s' if hops > 1 else ''})")
+                    else:
+                        last_beacon[key] = now
+                        relay_no_path += 1
                 # I2I: the signal serving this ambulance arms the next one
                 if sig.owner == amb and i + 1 < len(upcoming):
                     nxt = upcoming[i + 1][0]
@@ -612,12 +786,19 @@ def main():
                     else:
                         sig.restore()
 
-            # GUI rings: orange = armed by I2I, yellow = clearing, green = preempted
+            # GUI rings: orange = armed by I2I, yellow = clearing,
+            # green = preempted, purple = the current clearing/green grant
+            # was obtained via multi-hop relay (checked first, since
+            # sig.start() flips mode -> CLEARING/GREEN the same step the
+            # relay beacon is heard, so a separate "relay-pending" mode
+            # is never actually reached).
             if not args.nogui:
+                relay_grant = (args.relay and sig.owner is not None
+                               and sig.via.get(sig.owner) == "RELAY")
                 if sig.mode == Signal.GREEN:
-                    paint_ring(sig, "green")
+                    paint_ring(sig, "relay" if relay_grant else "green")
                 elif sig.mode == Signal.CLEARING:
-                    paint_ring(sig, "clearing")
+                    paint_ring(sig, "relay" if relay_grant else "clearing")
                 elif any(sig.is_armed(a, now) and a in alive
                          for a in ambulances):
                     paint_ring(sig, "armed")
@@ -653,6 +834,11 @@ def main():
         print(f"messages   : {channel.sent} sent, {channel.dropped} lost")
         if not args.no_v2v:
             print(f"V2V        : {v2v_moves} cars moved over for ambulances")
+        if args.relay:
+            n_relay = sum(1 for e in events if e[2] == "RELAY")
+            print(f"relay      : {relay_delivered} beacon(s) delivered via "
+                  f"multi-hop relay ({relay_no_path} attempt(s) found no "
+                  f"path), {n_relay} preemption(s) triggered via relay")
 
     os.makedirs(os.path.join(HERE, "results"), exist_ok=True)
     with open(os.path.join(HERE, "results", f"ambulances_{tag}.csv"),

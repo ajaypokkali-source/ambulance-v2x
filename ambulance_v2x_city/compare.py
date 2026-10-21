@@ -38,7 +38,7 @@ def main():
     extra = sys.argv[1:]
     for tag, flags, label, _ in RUNS:
         print(f"running: {label} ...", flush=True)
-        cmd = [os.path.join(HERE, ".venv", "bin", "python"),
+        cmd = [sys.executable,
                os.path.join(HERE, "v2x_city.py"), "--nogui"] + flags
         if "--baseline" not in flags:
             cmd += extra

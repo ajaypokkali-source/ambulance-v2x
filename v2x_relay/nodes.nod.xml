@@ -1,0 +1,63 @@
+<nodes>
+
+    <!-- ================================================== -->
+    <!-- MAIN CORRIDOR                                       -->
+    <!--                                                      -->
+    <!-- This is the SAME corridor as v2v_stress_test's       -->
+    <!-- nodes.nod.xml (identical coordinates), with J2, J3   -->
+    <!-- and J4 upgraded from "priority" to "traffic_light"   -->
+    <!-- so netconvert generates real signal programs for the -->
+    <!-- V2I emergency-preemption logic.                      -->
+    <!--                                                      -->
+    <!-- J1 and J5 stay "priority" (corridor entry/exit) so    -->
+    <!-- the existing V2V lane-change baseline at the start   -->
+    <!-- of J1_J2 is completely undisturbed.                  -->
+    <!-- ================================================== -->
+
+    <node id="J1" x="0"    y="0" type="priority"/>
+    <node id="J2" x="300"  y="0" type="traffic_light"/>
+    <node id="J3" x="600"  y="0" type="traffic_light"/>
+    <node id="J4" x="900"  y="0" type="traffic_light"/>
+    <node id="J5" x="1200" y="0" type="priority"/>
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROADS AT J1 -->
+    <!-- ================================================== -->
+
+    <node id="J1_N" x="0" y="250" type="priority"/>
+    <node id="J1_S" x="0" y="-250" type="priority"/>
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROADS AT J2 -->
+    <!-- ================================================== -->
+
+    <node id="J2_N" x="300" y="250" type="priority"/>
+    <node id="J2_S" x="300" y="-250" type="priority"/>
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROADS AT J3 -->
+    <!-- ================================================== -->
+
+    <node id="J3_N" x="600" y="250" type="priority"/>
+    <node id="J3_S" x="600" y="-250" type="priority"/>
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROADS AT J4 -->
+    <!-- ================================================== -->
+
+    <node id="J4_N" x="900" y="250" type="priority"/>
+    <node id="J4_S" x="900" y="-250" type="priority"/>
+
+
+    <!-- ================================================== -->
+    <!-- SIDE ROADS AT J5 -->
+    <!-- ================================================== -->
+
+    <node id="J5_N" x="1200" y="250" type="priority"/>
+    <node id="J5_S" x="1200" y="-250" type="priority"/>
+
+</nodes>

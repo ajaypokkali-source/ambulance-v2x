@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-10-04 15:22:36.231862 by randomTrips.py UNKNOWN
+<!-- generated on 2026-10-21 20:21:34.157301 by Eclipse SUMO randomTrips.py v1_27_1+0000-7717f2379d9
 <configuration>
-    <net-file value="/home/viz/ambulance_v2x_city/network.net.xml"/>
-    <output-trip-file value="/home/viz/ambulance_v2x_city/traffic.trips.xml"/>
-    <route-file value="/home/viz/ambulance_v2x_city/traffic.rou.xml"/>
+    <net-file value="C:\ambulance_v2x\ambulance_v2x_city\network.net.xml"/>
+    <output-trip-file value="C:\ambulance_v2x\ambulance_v2x_city\traffic.trips.xml"/>
+    <route-file value="C:\ambulance_v2x\ambulance_v2x_city\traffic.rou.xml"/>
     <prefix value="car"/>
     <fringe-factor value="10"/>
     <end value="640.0"/>
@@ -12,18 +12,22 @@
 </configuration>
 -->
 
-<!-- generated on 2026-10-04 15:22:36 by Eclipse SUMO duarouter Version 1.18.0
-<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
+<!-- generated on 2026-10-21T20:21:34.030735+05:30 by Eclipse SUMO duarouter 1.27.1
+<duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>
-        <net-file value="/home/viz/ambulance_v2x_city/network.net.xml"/>
-        <route-files value="/home/viz/ambulance_v2x_city/traffic.trips.xml"/>
+        <net-file value="C:\ambulance_v2x\ambulance_v2x_city\network.net.xml"/>
+        <route-files value="C:\ambulance_v2x\ambulance_v2x_city\traffic.trips.xml"/>
     </input>
 
     <output>
-        <output-file value="/home/viz/ambulance_v2x_city/traffic.rou.xml"/>
+        <output-file value="C:\ambulance_v2x\ambulance_v2x_city\traffic.rou.xml"/>
         <alternatives-output value="NUL"/>
     </output>
+
+    <processing>
+        <routing-threads value="6"/>
+    </processing>
 
     <time>
         <begin value="0.0"/>
@@ -36,7 +40,7 @@
         <no-step-log value="true"/>
     </report>
 
-</configuration>
+</duarouterConfiguration>
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
@@ -125,7 +129,7 @@
         <route edges="S2_J2 J2_J3 J3_J4 J4_J5 J5_S5"/>
     </vehicle>
     <vehicle id="car28" depart="33.60">
-        <route edges="J3_J4 J4_J3 J3_J2 J2_J1 J1_J6 J6_W1"/>
+        <route edges="J3_J4 J4_J9 J9_J8 J8_J7 J7_J6 J6_W1"/>
     </vehicle>
     <vehicle id="car29" depart="34.80">
         <route edges="J3_J2 J2_J3 J3_S3"/>
@@ -146,7 +150,7 @@
         <route edges="N1_J6 J6_J7 J7_J2 J2_J1"/>
     </vehicle>
     <vehicle id="car35" depart="42.00">
-        <route edges="J6_J1 J1_J6 J6_J7 J7_J8 J8_J9 J9_N4"/>
+        <route edges="J6_J1 J1_J2 J2_J3 J3_J4 J4_J9 J9_N4"/>
     </vehicle>
     <vehicle id="car36" depart="43.20">
         <route edges="S5_J5 J5_J4 J4_J3 J3_J2 J2_S2"/>
@@ -230,7 +234,7 @@
         <route edges="E0_J5 J5_J4 J4_J3 J3_J2 J2_S2"/>
     </vehicle>
     <vehicle id="car63" depart="75.60">
-        <route edges="E0_J5 J5_J4 J4_J9 J9_J4"/>
+        <route edges="E0_J5 J5_J10 J10_J9 J9_J4"/>
     </vehicle>
     <vehicle id="car64" depart="76.80">
         <route edges="S5_J5 J5_J4 J4_J3 J3_J2 J2_J7 J7_N2"/>
@@ -263,7 +267,7 @@
         <route edges="N5_J10 J10_J9 J9_J8 J8_J7 J7_J6 J6_W1"/>
     </vehicle>
     <vehicle id="car74" depart="88.80">
-        <route edges="J5_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_S2"/>
+        <route edges="J5_J10 J10_J9 J9_J8 J8_J7 J7_J2 J2_S2"/>
     </vehicle>
     <vehicle id="car75" depart="90.00">
         <route edges="W1_J6 J6_N1"/>
@@ -293,7 +297,7 @@
         <route edges="J7_J8 J8_J7 J7_J6 J6_N1"/>
     </vehicle>
     <vehicle id="car84" depart="100.80">
-        <route edges="J6_J1 J1_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_N5"/>
+        <route edges="J6_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_J10 J10_N5"/>
     </vehicle>
     <vehicle id="car85" depart="102.00">
         <route edges="W0_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_J4"/>
@@ -305,7 +309,7 @@
         <route edges="S4_J4 J4_J3 J3_J2 J2_J1 J1_S1"/>
     </vehicle>
     <vehicle id="car88" depart="105.60">
-        <route edges="E1_J10 J10_J5 J5_J4 J4_J5"/>
+        <route edges="E1_J10 J10_J9 J9_J4 J4_J5"/>
     </vehicle>
     <vehicle id="car89" depart="106.80">
         <route edges="N3_J8 J8_J9 J9_J4 J4_S4"/>
@@ -449,7 +453,7 @@
         <route edges="S4_J4 J4_J3 J3_J2 J2_S2"/>
     </vehicle>
     <vehicle id="car136" depart="163.20">
-        <route edges="S2_J2 J2_J7 J7_J8 J8_J9 J9_J8"/>
+        <route edges="S2_J2 J2_J3 J3_J4 J4_J9 J9_J8"/>
     </vehicle>
     <vehicle id="car137" depart="164.40">
         <route edges="J1_J2 J2_J3 J3_J4 J4_J5 J5_J10 J10_N5"/>
@@ -458,7 +462,7 @@
         <route edges="E1_J10 J10_J5 J5_E0"/>
     </vehicle>
     <vehicle id="car139" depart="166.80">
-        <route edges="J9_J8 J8_J9 J9_J10 J10_J5 J5_S5"/>
+        <route edges="J9_J8 J8_J3 J3_J4 J4_J5 J5_S5"/>
     </vehicle>
     <vehicle id="car140" depart="168.00">
         <route edges="S3_J3 J3_J2 J2_J1 J1_S1"/>
@@ -473,7 +477,7 @@
         <route edges="S5_J5 J5_J10 J10_N5"/>
     </vehicle>
     <vehicle id="car144" depart="172.80">
-        <route edges="N3_J8 J8_J3 J3_J2 J2_J3"/>
+        <route edges="N3_J8 J8_J7 J7_J2 J2_J3"/>
     </vehicle>
     <vehicle id="car145" depart="174.00">
         <route edges="E0_J5 J5_J4 J4_J9 J9_J8 J8_J7 J7_J6"/>
@@ -560,7 +564,7 @@
         <route edges="N1_J6 J6_J7 J7_J8 J8_N3"/>
     </vehicle>
     <vehicle id="car173" depart="207.60">
-        <route edges="W1_J6 J6_J7 J7_J2 J2_J7"/>
+        <route edges="W1_J6 J6_J1 J1_J2 J2_J7"/>
     </vehicle>
     <vehicle id="car174" depart="208.80">
         <route edges="S2_J2 J2_J3 J3_S3"/>
@@ -683,7 +687,7 @@
         <route edges="S2_J2 J2_J7 J7_J8 J8_J9 J9_J10 J10_E1"/>
     </vehicle>
     <vehicle id="car214" depart="256.80">
-        <route edges="S3_J3 J3_J2 J2_J7 J7_J2"/>
+        <route edges="S3_J3 J3_J8 J8_J7 J7_J2"/>
     </vehicle>
     <vehicle id="car215" depart="258.00">
         <route edges="E1_J10 J10_J5 J5_J4 J4_J3"/>
@@ -737,7 +741,7 @@
         <route edges="J9_J8 J8_J7 J7_J2 J2_S2"/>
     </vehicle>
     <vehicle id="car232" depart="278.40">
-        <route edges="N5_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_J2"/>
+        <route edges="N5_J10 J10_J9 J9_J8 J8_J7 J7_J6 J6_J1 J1_J2"/>
     </vehicle>
     <vehicle id="car233" depart="279.60">
         <route edges="J7_J6 J6_N1"/>
@@ -758,7 +762,7 @@
         <route edges="S1_J1 J1_J6 J6_N1"/>
     </vehicle>
     <vehicle id="car239" depart="286.80">
-        <route edges="S5_J5 J5_J4 J4_J3 J3_J2 J2_J7 J7_J2"/>
+        <route edges="S5_J5 J5_J10 J10_J9 J9_J8 J8_J7 J7_J2"/>
     </vehicle>
     <vehicle id="car240" depart="288.00">
         <route edges="N2_J7 J7_J8 J8_J9 J9_J10 J10_E1"/>
@@ -794,7 +798,7 @@
         <route edges="S1_J1 J1_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_E1"/>
     </vehicle>
     <vehicle id="car251" depart="301.20">
-        <route edges="N2_J7 J7_J8 J8_J9 J9_J10 J10_J5 J5_J10"/>
+        <route edges="N2_J7 J7_J2 J2_J3 J3_J4 J4_J5 J5_J10"/>
     </vehicle>
     <vehicle id="car252" depart="302.40">
         <route edges="E0_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_J6 J6_J7"/>
@@ -842,7 +846,7 @@
         <route edges="N5_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_W0"/>
     </vehicle>
     <vehicle id="car267" depart="320.40">
-        <route edges="S3_J3 J3_J2 J2_J7 J7_J2"/>
+        <route edges="S3_J3 J3_J8 J8_J7 J7_J2"/>
     </vehicle>
     <vehicle id="car268" depart="321.60">
         <route edges="J3_J2 J2_J3 J3_J4 J4_J5 J5_S5"/>
@@ -929,7 +933,7 @@
         <route edges="S5_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_S1"/>
     </vehicle>
     <vehicle id="car296" depart="355.20">
-        <route edges="J6_J1 J1_J6 J6_J7 J7_N2"/>
+        <route edges="J6_J1 J1_J2 J2_J7 J7_N2"/>
     </vehicle>
     <vehicle id="car297" depart="356.40">
         <route edges="N2_J7 J7_J8 J8_N3"/>
@@ -992,13 +996,13 @@
         <route edges="N1_J6 J6_J7 J7_J8 J8_J9 J9_J10 J10_N5"/>
     </vehicle>
     <vehicle id="car317" depart="380.40">
-        <route edges="J4_J9 J9_J4 J4_J3 J3_J2 J2_J1 J1_W0"/>
+        <route edges="J4_J9 J9_J8 J8_J3 J3_J2 J2_J1 J1_W0"/>
     </vehicle>
     <vehicle id="car318" depart="381.60">
         <route edges="J3_J8 J8_J9 J9_J10 J10_E1"/>
     </vehicle>
     <vehicle id="car319" depart="382.80">
-        <route edges="N5_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_J3"/>
+        <route edges="N5_J10 J10_J9 J9_J8 J8_J7 J7_J2 J2_J3"/>
     </vehicle>
     <vehicle id="car320" depart="384.00">
         <route edges="W1_J6 J6_J7 J7_J2 J2_J3 J3_J4 J4_J5 J5_E0"/>
@@ -1259,7 +1263,7 @@
         <route edges="N3_J8 J8_J3 J3_J2 J2_S2"/>
     </vehicle>
     <vehicle id="car406" depart="487.20">
-        <route edges="J4_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_J6 J6_N1"/>
+        <route edges="J4_J5 J5_J10 J10_J9 J9_J8 J8_J7 J7_J6 J6_N1"/>
     </vehicle>
     <vehicle id="car407" depart="488.40">
         <route edges="N5_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_J1 J1_W0"/>
@@ -1304,7 +1308,7 @@
         <route edges="N2_J7 J7_J6 J6_N1"/>
     </vehicle>
     <vehicle id="car421" depart="505.20">
-        <route edges="S2_J2 J2_J7 J7_J8 J8_J7"/>
+        <route edges="S2_J2 J2_J3 J3_J8 J8_J7"/>
     </vehicle>
     <vehicle id="car422" depart="506.40">
         <route edges="S5_J5 J5_J4 J4_J3 J3_J8 J8_J9"/>
@@ -1382,7 +1386,7 @@
         <route edges="J8_J7 J7_J8 J8_J3"/>
     </vehicle>
     <vehicle id="car447" depart="536.40">
-        <route edges="J5_J10 J10_J5 J5_J4 J4_J3 J3_S3"/>
+        <route edges="J5_J10 J10_J9 J9_J8 J8_J3 J3_S3"/>
     </vehicle>
     <vehicle id="car448" depart="537.60">
         <route edges="N4_J9 J9_J4 J4_J3 J3_J2 J2_J1 J1_W0"/>
@@ -1397,7 +1401,7 @@
         <route edges="W1_J6 J6_N1"/>
     </vehicle>
     <vehicle id="car452" depart="542.40">
-        <route edges="J9_J8 J8_J9 J9_J10 J10_J5 J5_J10"/>
+        <route edges="J9_J8 J8_J3 J3_J4 J4_J5 J5_J10"/>
     </vehicle>
     <vehicle id="car453" depart="543.60">
         <route edges="S2_J2 J2_J7 J7_J6 J6_W1"/>
@@ -1637,7 +1641,7 @@
         <route edges="E1_J10 J10_J5 J5_S5"/>
     </vehicle>
     <vehicle id="car532" depart="638.40">
-        <route edges="E1_J10 J10_J5 J5_J4 J4_J3 J3_J2 J2_J3"/>
+        <route edges="E1_J10 J10_J9 J9_J8 J8_J7 J7_J2 J2_J3"/>
     </vehicle>
     <vehicle id="car533" depart="639.60">
         <route edges="S1_J1 J1_J2 J2_J3 J3_J4 J4_J5 J5_E0"/>
