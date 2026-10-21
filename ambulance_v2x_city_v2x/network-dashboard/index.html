@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NR-V2X Real-Time Network Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- TOP APP HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand">
+        <span class="brand-title">NR-V2X NETWORK VISUALIZER</span>
+        <span class="brand-sub">Sidelink Telemetry & Corridor Priority • 5G-LENA / ns-3.42 + SUMO</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="status-pill" id="connection-pill">
+        <span class="status-dot"></span>
+        <span class="status-text" id="connection-status">WAITING FOR SIMULATION</span>
+      </div>
+      <div class="time-readout">
+        <span class="label">SIM TIME:</span>
+        <span class="val mono" id="sim-time-val">0.00 s</span>
+      </div>
+      <div class="step-readout">
+        <span class="label">STEP:</span>
+        <span class="val mono" id="sim-step-val">0</span>
+      </div>
+      <div class="pacing-readout">
+        <span class="label">PACING:</span>
+        <span class="val mono" id="sim-pacing-val">0.50 s</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn btn-secondary" id="btn-reset-view" title="Reset View Fit">Reset View</button>
+      <button class="btn btn-secondary" id="btn-clear-history" title="Clear displayed event history">Clear Log</button>
+    </div>
+  </header>
+
+  <!-- MAIN APPLICATION LAYOUT -->
+  <main class="app-body">
+    <!-- TOPOLOGY CANVAS CONTAINER -->
+    <section class="topology-panel">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="panel-tag">NETWORK TOPOLOGY</span>
+          <div class="legend-group">
+            <span class="legend-item"><span class="swatch swatch-v2i"></span> V2I (Amb &rarr; TLS)</span>
+            <span class="legend-item"><span class="swatch swatch-i2i"></span> I2I (1-Hop Rolling)</span>
+            <span class="legend-item"><span class="swatch swatch-confirm"></span> Confirmed RX</span>
+            <span class="legend-item"><span class="swatch swatch-green"></span> Priority Green</span>
+            <span class="legend-item"><span class="swatch swatch-yellow"></span> Clearing</span>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <label class="toggle-control">
+            <input type="checkbox" id="toggle-cars" checked>
+            <span>Traffic Cars</span>
+          </label>
+          <label class="toggle-control">
+            <input type="checkbox" id="toggle-roads" checked>
+            <span>Road Mesh</span>
+          </label>
+          <label class="toggle-control">
+            <input type="checkbox" id="toggle-labels" checked>
+            <span>Labels</span>
+          </label>
+          <button class="btn btn-icon" id="btn-zoom-in" title="Zoom In">+</button>
+          <button class="btn btn-icon" id="btn-zoom-out" title="Zoom Out">&minus;</button>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="topology-canvas"></canvas>
+        <div class="canvas-hud">
+          <div class="hud-item">
+            <span class="hud-label">Sidelink Radio:</span>
+            <span class="hud-val">5.89 GHz (n47) • 40 MHz • μ=2 (SCS 60kHz)</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Selected Node:</span>
+            <span class="hud-val mono" id="hud-selected-node">None</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Active Packets:</span>
+            <span class="hud-val mono" id="hud-active-packets">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIDEBAR PANELS -->
+    <aside class="sidebar">
+      <!-- 1. STATISTICS PANEL -->
+      <section class="side-card stats-card">
+        <div class="card-header">
+          <span class="card-title">NETWORK TELEMETRY METRICS</span>
+          <span class="card-subtitle">Application Layer Packets</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">V2I TRANSMISSIONS</div>
+            <div class="stat-value text-v2i mono" id="stat-v2i-tx">0</div>
+            <div class="stat-meta">Ambulance Beacons</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">V2I RECEPTIONS</div>
+            <div class="stat-value text-confirm mono" id="stat-v2i-rx">0</div>
+            <div class="stat-meta"><span id="stat-v2i-acc">0</span> Accepted for TLS</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">I2I TRANSMISSIONS</div>
+            <div class="stat-value text-i2i mono" id="stat-i2i-tx">0</div>
+            <div class="stat-meta">1-Hop Warnings</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">I2I RECEPTIONS</div>
+            <div class="stat-value text-confirm mono" id="stat-i2i-rx">0</div>
+            <div class="stat-meta">No Relay Propagation</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">ACTIVE AMBULANCES</div>
+            <div class="stat-value mono" id="stat-active-amb">0 / 8</div>
+            <div class="stat-meta">UE0 – UE7</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">ACTIVE JUNCTIONS</div>
+            <div class="stat-value mono" id="stat-active-junc">10 / 10</div>
+            <div class="stat-meta">J1 – J10 (UE8–UE17)</div>
+          </div>
+        </div>
+        <div class="layer-footnote">
+          <span class="footnote-bullet">&#9679;</span>
+          PHY/MAC layer stats traced to SQLite (<span class="mono">pktTxRx, pscchTxUeMac</span>). Live telemetry reflects Application Layer (ns-3 LiveBridge).
+        </div>
+      </section>
+
+      <!-- 2. INSPECTOR PANEL -->
+      <section class="side-card inspector-card">
+        <div class="card-header">
+          <span class="card-title">NODE & PACKET INSPECTOR</span>
+          <span class="card-badge" id="inspector-badge">Ready</span>
+        </div>
+        <div class="inspector-body" id="inspector-content">
+          <p class="placeholder-text">Click any junction, ambulance, or event row to inspect parameters.</p>
+        </div>
+      </section>
+
+      <!-- 3. EVENT LOG PANEL -->
+      <section class="side-card log-card">
+        <div class="card-header">
+          <div class="card-header-row">
+            <span class="card-title">COMMUNICATION EVENT LOG</span>
+            <div class="log-count mono" id="log-count">0 events</div>
+          </div>
+          <div class="log-filter-row">
+            <div class="btn-group" id="filter-type-group">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="v2i">V2I</button>
+              <button class="filter-btn" data-filter="i2i">I2I</button>
+              <button class="filter-btn" data-filter="tx">TX</button>
+              <button class="filter-btn" data-filter="rx">RX</button>
+            </div>
+            <select id="filter-node-select" class="node-select">
+              <option value="all">All Nodes</option>
+              <optgroup label="Junctions">
+                <option value="J1">J1</option>
+                <option value="J2">J2</option>
+                <option value="J3">J3</option>
+                <option value="J4">J4</option>
+                <option value="J5">J5</option>
+                <option value="J6">J6</option>
+                <option value="J7">J7</option>
+                <option value="J8">J8</option>
+                <option value="J9">J9</option>
+                <option value="J10">J10</option>
+              </optgroup>
+              <optgroup label="Ambulances">
+                <option value="amb1">amb1</option>
+                <option value="amb2">amb2</option>
+                <option value="amb3">amb3</option>
+                <option value="amb4">amb4</option>
+                <option value="amb5">amb5</option>
+                <option value="amb6">amb6</option>
+                <option value="amb7">amb7</option>
+                <option value="amb8">amb8</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="log-table-container" id="log-table-container">
+          <table class="event-table">
+            <thead>
+              <tr>
+                <th style="width: 55px;">Time</th>
+                <th style="width: 45px;">Type</th>
+                <th style="width: 50px;">From</th>
+                <th style="width: 50px;">To</th>
+                <th style="width: 70px;">Status</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="event-log-rows">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

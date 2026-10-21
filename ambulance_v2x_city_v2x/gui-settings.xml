@@ -1,0 +1,11 @@
+<viewsettings>
+    <scheme name="real world">
+        <junctions>
+            <junctionName show="1" size="45" color="20,20,20,255" constantSize="1"/>
+        </junctions>
+        <pois>
+            <poiType show="1" size="55" color="0,0,0,255" bgColor="255,255,255,215" constantSize="1"/>
+        </pois>
+    </scheme>
+    <delay value="100"/>
+</viewsettings>
