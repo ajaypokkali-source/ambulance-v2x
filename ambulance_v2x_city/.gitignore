@@ -1,6 +1,0 @@
-.venv/
-.overlay/
-__pycache__/
-*.pyc
-traffic.trips.xml
-screenshots/

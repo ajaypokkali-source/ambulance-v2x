@@ -1,5 +1,0 @@
-# traci/sumolib must match the installed SUMO version (apt gives 1.18.0)
-traci==1.18.0
-sumolib==1.18.0
-pillow
-matplotlib

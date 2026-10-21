@@ -54,3 +54,10 @@ __pycache__/
 __pycache__/
 *.py[cod]
 *.log
+
+# Backup and temporary files
+**/*backup*
+**/*before*
+**/*broken*
+*.log
+__pycache__/
